@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\PrivatePackage;
+use App\Support\VehicleOptions;
 use DateTime;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -270,6 +271,8 @@ return $this->render('detail', ['title' => 'ตัวอย่าง: '.$tour['t
                 $value = request()->post($field);
                 $data[$field] = is_string($value) ? trim($value) : '';
             }
+            $oldVehicleImages = VehicleOptions::images(VehicleOptions::decode($existing['vehicle_options'] ?? null));
+            $data['vehicle_options'] = VehicleOptions::encode(VehicleOptions::parse(request()->post('vehicle_options'), $errors, $hotelFolder, $oldVehicleImages));
             $routeRows = [];
             $postedRoutes = request()->post('destinations');
             $seenRoutes = [];
@@ -592,7 +595,8 @@ return $this->render('detail', ['title' => 'ตัวอย่าง: '.$tour['t
                             $keptHotelPaths = array_merge($keptHotelPaths, $savedHotel['images']);
                         }
                     }
-                    $this->trips->remove_replaced_files(array_merge($replaced, array_diff($oldHotelPaths, $keptHotelPaths)));
+                    $keptVehicleImages = VehicleOptions::images(VehicleOptions::decode($data['vehicle_options']));
+                    $this->trips->remove_replaced_files(array_merge($replaced, array_diff($oldHotelPaths, $keptHotelPaths), array_diff($oldVehicleImages, $keptVehicleImages)));
                     $noFlights = $isPrivate || ! $data['flight_included'] ? 0 : count(array_filter($departures, function ($d) {
                         return $d['active'] && $d['flight_set_key'] === '';
                     }));
@@ -635,7 +639,7 @@ return $this->render('detail', ['title' => 'ตัวอย่าง: '.$tour['t
             $tour = array_merge($data, ['id' => $id, 'itinerary' => $days, 'departures' => $departures, 'images' => $images, 'destinations' => $routeRows, 'flight_sets' => $flightSets]);
         }
 
-        return $this->render('admin/editor', ['title' => $id ? 'แก้ไขโปรแกรม' : 'เพิ่มโปรแกรม', 'tour' => $tour, 'hotel_folder' => $hotelFolder, 'errors' => $errors, 'destination_nodes' => $this->places->all(), 'airline_options' => $this->airlines->options($id)], true);
+        return $this->render('admin/editor', ['title' => $id ? 'แก้ไขโปรแกรม' : 'เพิ่มโปรแกรม', 'tour' => $tour, 'hotel_folder' => $hotelFolder, 'errors' => $errors, 'destination_nodes' => $this->places->all(), 'airline_options' => $this->airlines->options($id), 'vehicle_templates' => $this->vehicle_templates->all()], true);
     }
 
     private function posted_flight_sets($isPrivate, $tourId, &$errors)

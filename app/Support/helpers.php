@@ -288,7 +288,7 @@ function seo_pages()
         'private' => ['label' => 'แพ็คเกจส่วนตัว', 'path' => 'packages'],
         'gallery' => ['label' => 'แกลเลอรี', 'path' => 'gallery', 'title' => 'Gallery • บันทึกการเดินทาง · RoamVenture', 'description' => seo_default_description(), 'image' => 'public/images/hero.jpg'],
         'blog' => ['label' => 'บทความ', 'path' => 'blog', 'title' => 'Blog · เรื่องเล่าระหว่างทาง · RoamVenture', 'description' => 'แรงบันดาลใจ จุดหมาย และเคล็ดลับเตรียมตัวออกเดินทางจาก RoamVenture', 'image' => 'public/images/hero.jpg'],
-        'about' => ['label' => 'เกี่ยวกับเรา', 'path' => 'aboutus', 'title' => 'เกี่ยวกับเรา | รู้จัก RoamVenture และรูปแบบการเดินทาง', 'description' => 'รู้จัก RoamVenture ค้นหาทัวร์และแพ็คเกจส่วนตัว เลือกวันเดินทาง จำนวนผู้เดินทาง และบริการที่เหมาะกับคุณ พร้อมขั้นตอนการจองและคำตอบก่อนออกเดินทาง', 'image' => 'public/images/story.jpg'],
+        'about' => ['label' => 'เกี่ยวกับเรา', 'path' => 'aboutus', 'title' => 'เกี่ยวกับเรา | รู้จัก RoamVenture และรูปแบบการเดินทาง', 'description' => 'รู้จัก RoamVenture บริการทัวร์รวมตั๋ว ทัวร์ไม่รวมตั๋ว และแพ็คเกจส่วนตัว เลือกวันเดินทางและบริการที่เหมาะกับคุณ พร้อมขั้นตอนการจองและคำตอบก่อนออกเดินทาง', 'image' => 'public/images/story.jpg'],
         'contact' => ['label' => 'ติดต่อเรา', 'path' => 'contactus', 'title' => 'ติดต่อเรา | สอบถามทัวร์และแพ็คเกจส่วนตัว RoamVenture', 'description' => 'ติดต่อ RoamVenture เพื่อสอบถามทัวร์ แพ็คเกจส่วนตัว และคำขอจอง ดูช่องทางติดต่อ พร้อมเครื่องมือเตรียมข้อความวางแผนทริปผ่าน LINE หรืออีเมล', 'image' => 'public/images/hero.jpg'],
         'privacy' => ['label' => 'นโยบายข้อมูล', 'path' => 'privacy', 'title' => 'การใช้ข้อมูลสำหรับคำขอจอง · RoamVenture', 'description' => seo_default_description(), 'image' => 'public/images/hero.jpg'],
     ];

@@ -70,9 +70,10 @@ class CompanyController extends Controller
             $channels[] = 'อีเมล '.$contact['email'];
         }
         $faqs = $kind === 'about' ? [
-            ['RoamVenture คืออะไร?', 'RoamVenture เป็นเว็บไซต์สำหรับค้นหาโปรแกรมทัวร์และแพ็คเกจส่วนตัว เปรียบเทียบรายละเอียด วันเดินทาง และราคาที่แสดงในแต่ละโปรแกรม พร้อมส่งคำขอจองหรือสอบถามทีมงานก่อนตัดสินใจ'],
+            ['RoamVenture คืออะไร?', 'RoamVenture ให้บริการทัวร์และแพ็คเกจส่วนตัว คุณดูรายละเอียด วันเดินทาง และราคาของแต่ละโปรแกรมบนเว็บไซต์ แล้วส่งคำขอจองหรือสอบถามทีมงานก่อนตัดสินใจ'],
             ['ทัวร์กับแพ็คเกจส่วนตัวต่างกันอย่างไร?', 'ทัวร์มีรอบวันเดินทางตามโปรแกรม ส่วนแพ็คเกจส่วนตัวให้เลือกวันเดินทาง จำนวนผู้เดินทาง และระดับบริการตามตัวเลือกที่เปิดให้จอง ราคาและบริการที่รวมจะแสดงในหน้าโปรแกรม'],
-            ['ราคาแพ็คเกจรวมอะไรบ้าง?', 'บริการที่รวมขึ้นอยู่กับแต่ละโปรแกรม เช่น ที่พัก การเดินทาง ไกด์ หรือบริการถ่ายภาพ ควรตรวจสอบหัวข้อบริการที่รวม รายการไม่รวม และเงื่อนไขก่อนส่งคำขอจอง'],
+            ['ทัวร์รวมตั๋วกับไม่รวมตั๋วต่างกันอย่างไร?', 'ทัวร์รวมตั๋วมีตั๋วเครื่องบินตามที่ระบุในโปรแกรมอยู่ในราคาแล้ว ส่วนทัวร์ไม่รวมตั๋วและแพ็คเกจส่วนตัวเลือกให้ทีมงานช่วยจองตั๋วได้ในฟอร์มจอง ราคาตั๋วแยกจากยอดคำขอจอง และทีมงานจะแจ้งราคาจริงให้ยืนยันก่อนซื้อ'],
+            ['ราคาโปรแกรมรวมอะไรบ้าง?', 'บริการที่รวมขึ้นอยู่กับแต่ละโปรแกรม เช่น ที่พัก การเดินทาง ไกด์ หรือบริการถ่ายภาพ ควรตรวจสอบหัวข้อราคารวม ราคาไม่รวม และเงื่อนไขและข้อกำหนดในหน้าโปรแกรมก่อนส่งคำขอจอง'],
             ['ส่งคำขอจองแล้วถือว่ายืนยันการเดินทางหรือไม่?', 'การส่งคำขอจองเป็นขั้นตอนเริ่มต้น ทีมงานต้องตรวจสอบรายละเอียดและที่ว่างก่อนยืนยัน โปรดตรวจสอบสถานะคำขอและเงื่อนไขการชำระเงินของรายการนั้น'],
         ] : [
             ['ติดต่อ RoamVenture ได้ทางไหน?', ($channels ? 'ติดต่อได้ทาง '.implode(' หรือ ', $channels).' ' : '').'หรือเลือกโปรแกรมที่สนใจแล้วส่งคำขอจองผ่านหน้าโปรแกรมเพื่อให้ทีมงานติดต่อกลับ'],
@@ -84,7 +85,7 @@ class CompanyController extends Controller
         $meta = seo_page_meta($this->settings, $kind) + ['canonical' => $url];
         $title = $meta['title'];
         $description = $meta['description'];
-        $org = ['@type' => 'Organization', '@id' => base_url().'#organization', 'name' => $brand, 'url' => base_url(), 'description' => 'เว็บไซต์ค้นหาโปรแกรมทัวร์และแพ็คเกจส่วนตัว'];
+        $org = ['@type' => 'Organization', '@id' => base_url().'#organization', 'name' => $brand, 'url' => base_url(), 'description' => 'บริการทัวร์และแพ็คเกจส่วนตัว'];
         if ($contact['tel']) {
             $org['telephone'] = $contact['tel'];
         }
@@ -92,10 +93,16 @@ class CompanyController extends Controller
             $org['email'] = $contact['email'];
         }
         if ($contact['address']) {
-            $org['address'] = ['@type' => 'PostalAddress', 'streetAddress' => $contact['address']];
+            // The setting doubles as the issuer block on booking documents, so it may open with a company name.
+            $street = preg_replace('/^บริษัท\s.+?\sจำกัด(?:\s*\(มหาชน\))?\s+/u', '', $contact['address']);
+            $org['address'] = ['@type' => 'PostalAddress', 'streetAddress' => $street];
         }
-        if ($contact['line_url']) {
-            $org['sameAs'] = [$contact['line_url']];
+        // Messenger is a chat link, not a profile of the organization.
+        $profiles = array_column(array_filter($contact['socials'], function ($social) {
+            return $social['key'] !== 'messenger_url';
+        }), 'url');
+        if ($profiles) {
+            $org['sameAs'] = $profiles;
         }
         $logo = branding_path($this->settings, 'logo_navbar_desktop');
         if ($logo) {
@@ -113,7 +120,38 @@ class CompanyController extends Controller
             }, $faqs)],
         ]];
 
-        return $this->render('company/'.$kind, ['title' => $title, 'company_page' => $kind, 'brand' => $brand, 'contact' => $contact, 'faqs' => $faqs, 'structured_data' => $schema, 'meta' => $meta]);
+        $data = ['title' => $title, 'company_page' => $kind, 'brand' => $brand, 'contact' => $contact, 'faqs' => $faqs, 'structured_data' => $schema, 'meta' => $meta];
+        if ($kind === 'about') {
+            $data += $this->about_links();
+        }
+
+        return $this->render('company/'.$kind, $data);
+    }
+
+    // Only link to sections that have something published, so a card never opens an empty listing.
+    private function about_links()
+    {
+        $live = [];
+        foreach (DB::table('tours')->select('program_type', 'flight_included')->distinct()->where('status', 'published')->get()->all() as $tour) {
+            $live[tour_channel($tour)] = true;
+        }
+        $cards = [
+            'flight' => ['image' => 'hero.jpg', 'alt' => 'ทิวทัศน์ภูเขาหิมะและป่าสน', 'lines' => ['ราคารวมตั๋วเครื่องบินตามที่ระบุในโปรแกรม', 'เลือกรอบเดินทาง แล้วดูเที่ยวบินของรอบนั้น'], 'cta' => 'สำรวจทัวร์รวมตั๋ว'],
+            'land' => ['image' => 'chiangmai.jpg', 'alt' => 'สถาปัตยกรรมวัดและเจดีย์ในเชียงใหม่', 'lines' => ['เลือกโปรแกรมและวันเดินทางที่เปิดไว้', 'จองตั๋วเอง หรือให้ทีมงานช่วยจองก็ได้'], 'cta' => 'สำรวจทัวร์ไม่รวมตั๋ว'],
+            'private' => ['image' => 'phangnga.jpg', 'alt' => 'วิวทะเลและภูเขาหินปูนสำหรับแรงบันดาลใจในการเดินทาง', 'lines' => ['เดินทางกับคนของคุณ เลือกวันและระดับบริการ', 'ตามตัวเลือกที่มีในแต่ละแพ็คเกจ'], 'cta' => 'ค้นหาแพ็คเกจส่วนตัว'],
+        ];
+        $styleCards = [];
+        foreach (program_channels() as $key => $channel) {
+            if (isset($live[$key])) {
+                $styleCards[] = $cards[$key] + ['path' => $channel['path'], 'label' => $channel['label'], 'eyebrow' => $channel['eyebrow']];
+            }
+        }
+
+        return [
+            'style_cards' => $styleCards,
+            'has_gallery' => Schema::hasTable('gallery_albums') && DB::table('gallery_albums')->where('status', 'published')->exists(),
+            'has_blog' => Schema::hasTable('blog_posts') && DB::table('blog_posts')->where('status', 'published')->where('published_at', '<=', date('Y-m-d H:i:s'))->exists(),
+        ];
     }
 
     public function sitemap()

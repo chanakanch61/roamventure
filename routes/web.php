@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccessAdminController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AirlinesAdminController;
+use App\Http\Controllers\VehicleTemplatesAdminController;
 use App\Http\Controllers\BannersAdminController;
 use App\Http\Controllers\BillingAdminController;
 use App\Http\Controllers\BlogAdminController;
@@ -74,6 +75,12 @@ $page('admin/airlines', [AirlinesAdminController::class, 'index']);
 $page('admin/airlines/new', [AirlinesAdminController::class, 'edit']);
 $page('admin/airlines/{id}/delete', [AirlinesAdminController::class, 'delete'])->whereNumber('id');
 $page('admin/airlines/{id}', [AirlinesAdminController::class, 'edit'])->whereNumber('id');
+$page('admin/vehicle-templates', [VehicleTemplatesAdminController::class, 'index']);
+$page('admin/vehicle-templates/new', [VehicleTemplatesAdminController::class, 'edit']);
+$page('admin/vehicle-templates/photo', [VehicleTemplatesAdminController::class, 'photo']);
+$page('admin/vehicle-templates/from-program', [VehicleTemplatesAdminController::class, 'from_program']);
+$page('admin/vehicle-templates/{id}/delete', [VehicleTemplatesAdminController::class, 'delete'])->whereNumber('id');
+$page('admin/vehicle-templates/{id}', [VehicleTemplatesAdminController::class, 'edit'])->whereNumber('id');
 
 $page('admin/tours', [AdminController::class, 'tours']);
 $page('admin/tours/add', [AdminController::class, 'edit']);

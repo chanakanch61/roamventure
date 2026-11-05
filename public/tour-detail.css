@@ -228,3 +228,12 @@ html:has(.trip-detail){scroll-padding-top:0}
  .has-booking-sheet #booking .booking-actions{position:sticky;bottom:0;z-index:1;background:#1a1a1a}
 }
 @media(prefers-reduced-motion:reduce){.has-booking-sheet #booking,.has-booking-sheet #booking.is-open{transition:none}}
+
+/* Group size to vehicle chart. The image tile stays light so the illustrations read on the dark theme too. */
+.vehicle-list{list-style:none;margin:16px 0 10px;padding:0}
+.vehicle-list li{display:grid;grid-template-columns:160px 90px minmax(0,1fr);align-items:center;gap:6px 20px;padding:10px 0;border-top:1px solid var(--trip-border)}
+.vehicle-list li:last-child{border-bottom:1px solid var(--trip-border)}
+.vehicle-list img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:contain;padding:6px 8px;background:#f1f1ef;border-radius:3px}
+.vehicle-list a img{padding:0;object-fit:cover}
+.vehicle-list b{font-size:17px;font-weight:600;white-space:nowrap}
+@media(max-width:540px){.vehicle-list li{grid-template-columns:112px minmax(0,1fr);column-gap:14px}.vehicle-list li>:first-child{grid-row:span 2}.vehicle-list b,.vehicle-list span{grid-column:2}}

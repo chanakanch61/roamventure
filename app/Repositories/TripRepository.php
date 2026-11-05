@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Support\PrivatePackage;
 use App\Support\ResolvesServices;
+use App\Support\VehicleOptions;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
@@ -12,7 +13,8 @@ class TripRepository
     use ResolvesServices;
 
     private const UPLOAD_COLUMNS = [
-        'tours' => ['cover', 'source_pdf'],
+        'tours' => ['cover', 'source_pdf', 'vehicle_options'],
+        'vehicle_templates' => ['vehicle_rows'],
         'tour_images' => ['path'],
         'tour_days' => ['image_path', 'images_json', 'hotels_json'],
         'blog_posts' => ['cover', 'content'],
@@ -577,7 +579,7 @@ class TripRepository
 
             return false;
         }
-        $paths = [$tour['cover'], $tour['source_pdf'], ...array_column(DB::table('tour_images')->where('tour_id', $id)->get()->all(), 'path')];
+        $paths = [$tour['cover'], $tour['source_pdf'], ...array_column(DB::table('tour_images')->where('tour_id', $id)->get()->all(), 'path'), ...VehicleOptions::images(VehicleOptions::decode($tour['vehicle_options'] ?? null))];
         foreach (DB::table('tour_days')->where('tour_id', $id)->get()->all() as $day) {
             $paths = array_merge($paths, array_column(day_photos($day), 'path'));
             foreach (day_hotels($day) as $hotel) {
@@ -616,7 +618,7 @@ class TripRepository
         $swap = [$folder, (string) $id];
         try {
             DB::transaction(function () use ($id, $swap) {
-                DB::update('UPDATE tours SET cover=REPLACE(cover,?,?), source_pdf=REPLACE(source_pdf,?,?) WHERE id=?', [...$swap, ...$swap, $id]);
+                DB::update('UPDATE tours SET cover=REPLACE(cover,?,?), source_pdf=REPLACE(source_pdf,?,?), vehicle_options=REPLACE(vehicle_options,?,?) WHERE id=?', [...$swap, ...$swap, ...$swap, $id]);
                 DB::update('UPDATE tour_images SET path=REPLACE(path,?,?) WHERE tour_id=?', [...$swap, $id]);
                 DB::update('UPDATE tour_days SET images_json=REPLACE(images_json,?,?), hotels_json=REPLACE(hotels_json,?,?) WHERE tour_id=?', [...$swap, ...$swap, $id]);
             });
@@ -640,7 +642,7 @@ class TripRepository
     public function remove_replaced_files($paths)
     {
         foreach (array_unique($paths) as $path) {
-            if (preg_match('~^(public/uploads/(tours/[a-z0-9-]+/images/)?[a-f0-9]+\.(jpg|jpeg|png|webp)|storage/(tour-pdfs|tours/[a-z0-9-]+/doc)/[a-f0-9]+\.pdf)$~D', $path) && ! $this->upload_in_use($path) && is_file(base_path($path))) {
+            if (preg_match('~^(public/uploads/(tours/[a-z0-9-]+/images/|vehicle-templates/)?[a-f0-9]+\.(jpg|jpeg|png|webp)|storage/(tour-pdfs|tours/[a-z0-9-]+/doc)/[a-f0-9]+\.pdf)$~D', $path) && ! $this->upload_in_use($path) && is_file(base_path($path))) {
                 @unlink(base_path($path));
             }
         }

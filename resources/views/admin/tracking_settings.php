@@ -5,7 +5,8 @@
 <?php foreach (tracking_fields() as $key=>$field): ?><label><?= e($field['label']) ?><input name="<?= e($key) ?>" maxlength="50" autocomplete="off" placeholder="<?= e($field['placeholder']) ?>" value="<?= e($settings[$key] ?? '') ?>"></label><?php endforeach ?>
 <p class="fineprint">กรอกเฉพาะ ID ไม่ต้องวางโค้ด script · LINE Tag ID เป็นคนละค่ากับ LINE Official ID สำหรับแชต</p>
 <p class="fineprint">โหมด GTM โหลดเฉพาะ Container ให้ตั้ง Meta / LINE และ Trigger ภายใน GTM ส่วนโหมดติดตั้งโดยตรงจะไม่โหลด GTM เพื่อป้องกัน event ซ้ำ</p>
-<p class="fineprint">Tag เริ่มทำงานหลังผู้เข้าชมยินยอมเท่านั้น และไม่โหลดในหลังบ้าน หน้า preview หน้าชำระเงิน หรือหน้าข้อมูลการจองส่วนตัว</p>
+<p class="fineprint">โหมด GTM โหลด Container ตั้งแต่เปิดหน้าโดยตั้ง Consent เริ่มต้นเป็นไม่ยินยอม ต้องตั้ง Consent ของทุก Tag ใน GTM เพื่อไม่ให้ Tag ทำงานก่อนยินยอม โดยเฉพาะ Meta / LINE</p>
+<p class="fineprint">Event ของเว็บและโหมดติดตั้งโดยตรงเริ่มทำงานหลังผู้เข้าชมยินยอมเท่านั้น และ Tracking ไม่โหลดในหลังบ้าน หน้า preview หน้าชำระเงิน หรือหน้าข้อมูลการจองส่วนตัว</p>
 <details><summary>Event และจุดที่นับผล</summary><ul>
 <li><code>page_view</code> — เปิดหน้าสาธารณะ</li>
 <li><code>view_item</code> — ดูรายละเอียดทัวร์</li>

@@ -150,7 +150,7 @@ Configure `/admin/settings` under **Tracking — GTM / Facebook / LINE**. The de
 
 Choose one installation owner:
 
-- **GTM** loads the configured container after consent. Configure GA4, Meta and LINE tags and their event triggers in that container. Direct pixel IDs saved in the form are ignored in this mode.
+- **GTM** loads the configured container on page open with Google Consent Mode defaulting to denied, unless the visitor already refused. Configure GA4, Meta and LINE tags and their event triggers in that container. Direct pixel IDs saved in the form are ignored in this mode.
 - **Direct** loads Meta Pixel and/or LINE Ads Tag after consent. GTM is ignored in this mode.
 
 The browser emits `page_view`, `view_item`, `search`, `begin_checkout`, `booking_submit`, `contact_click` and `generate_lead` in `window.dataLayer`. Product details live in `ecommerce.items`; a successful lead includes `event_id`, `currency`, `value` and `ecommerce`. Contact clicks include `contact_channel`. The site does not send free-text search terms, contact fields, messages, booking access tokens or full outbound contact URLs in these events. Treat a contact click as an attempt to open a channel; it does not establish that a message was sent.
@@ -159,11 +159,13 @@ In GTM, use Custom Event triggers with these exact names. Avoid counting `page_v
 
 Direct Meta events map to PageView, ViewContent, InitiateCheckout, Contact and Lead. Direct LINE sends `pv`, custom `cv` event types for interactions, and `Conversion` only after a saved booking request. No Purchase event is emitted because a booking request is not a payment.
 
-Consent defaults to denied. Vendor libraries are blocked until acceptance. A choice expires after 180 days and can be changed using the cookie settings button; withdrawal reloads the page to stop all libraries. The booking form's data-use checkbox is independent of tracking consent. Admin, preview, passport, customer booking and payment pages contain no tracking loader. Addresses containing arbitrary query input and referrers containing query strings or private routes also suppress SDK loading, so those visits can be absent from advertising reports. The route-card filter `program_type` is exempt because its values come from a fixed list.
+Consent defaults to denied. Site events are withheld until acceptance, and direct-mode vendor libraries are blocked until then. The GTM container is the exception: it loads before the choice, so every tag inside it must be gated by consent settings in GTM. Tags without built-in consent support, such as Meta and LINE, need "Require additional consent" or they fire before acceptance on load-based triggers. A choice expires after 180 days and can be changed using the cookie settings button; withdrawal reloads the page to stop all libraries. The booking form's data-use checkbox is independent of tracking consent. Admin, preview, passport, customer booking and payment pages contain no tracking loader. Addresses containing arbitrary query input and referrers containing query strings or private routes also suppress SDK loading, so those visits can be absent from advertising reports. The route-card filter `program_type` is exempt because its values come from a fixed list, and `gtm_debug` is exempt so GTM Preview can connect.
+
+To verify, open a private window and look for `gtm.js` in the DevTools Network tab before accepting; events such as `page_view` should appear in `dataLayer` only after accepting. In GTM Preview, confirm that no tag fires until acceptance.
 
 After the booking transaction commits, the session carries one anonymous lead event to `/booking/success`. When tracking is configured, this page displays a generic success message and a button to continue to the private booking details; it contains no customer name, reference or access token. Refreshing or revisiting success redirects to the details without another lead. With tracking off, the original immediate redirect remains. Browser conversion tracking is best effort: blockers, refusal, navigation before consent, or an unavailable SDK can prevent delivery; account-side receipt still requires verification with actual IDs.
 
-Provider references: [Google basic consent mode](https://developers.google.com/tag-platform/security/guides/consent?consentmode=basic), [LINE event tracking](https://www.lycbiz.com/jp/manual/line-ads/tracking_021/).
+Provider references: [Google consent mode](https://developers.google.com/tag-platform/security/guides/consent?consentmode=advanced), [LINE event tracking](https://www.lycbiz.com/jp/manual/line-ads/tracking_021/).
 
 ## หัวข้อราคาและเงื่อนไขในหน้าโปรแกรม
 
@@ -193,6 +195,10 @@ Provider references: [Google basic consent mode](https://developers.google.com/t
 
 ค่าเริ่มต้นคือใบอนุญาต 11/08038 ของบริษัท ทราเวลซี้ด จำกัด รูป `public/images/tour-license.png` ใช้เฉพาะกับเลขนี้เท่านั้น เมื่อเปลี่ยนเลขต้องอัปโหลดรูปใหม่หรือเลือกลบรูปเดิม เพื่อไม่ให้เลขกับเอกสารไม่ตรงกัน รูปที่อัปโหลดเก็บใน `public/uploads` และรูปเก่าจะถูกลบเมื่อบันทึกรูปใหม่สำเร็จ
 
+## หน้าเกี่ยวกับเรา
+
+การ์ดประเภทการเดินทางใน `/aboutus` แสดงเฉพาะประเภทที่มีโปรแกรมเผยแพร่ ถ้าไม่มีเลยจะซ่อนทั้งหัวข้อ ลิงก์แกลเลอรี่และบทความแสดงเมื่อมีเนื้อหาเผยแพร่ `sameAs` ใน schema ใช้ลิงก์โซเชียลจากหน้าตั้งค่าการติดต่อ ยกเว้น Messenger และ `streetAddress` ตัดชื่อบริษัทที่ขึ้นต้นที่อยู่ออก เพราะช่อง `company_address` ใช้เป็นข้อมูลผู้ออกเอกสารด้วย
+
 ## จำกัดการเข้าชมระหว่างเตรียมเว็บไซต์
 
 ระบบเปิดการจำกัดหน้าบ้านเป็นค่าเริ่มต้นเมื่อยังไม่มีการตั้งค่า ผู้เข้าชมจะถูกส่งไป `/site-login` รวมถึงการเปิดหน้าย่อยโดยตรง แอดมินที่เข้าสู่ระบบและบัญชียังใช้งานได้สามารถดูหน้าบ้านได้ทันที
@@ -213,3 +219,17 @@ Provider references: [Google basic consent mode](https://developers.google.com/t
 รูปแชร์ต้องเป็น JPG, PNG หรือ WebP ไม่เกิน 5 MB และมีขนาดอย่างน้อย 1200 × 630 px ระบบ (`App\Support\ShareImage`) ครอปกึ่งกลางแล้วบันทึกเป็น JPEG 1200 × 630 px ไม่ขยายรูปที่เล็กกว่านี้เพราะจะแตกเมื่อแชร์ ส่วนที่โปร่งใสจะเป็นสีขาว และรูปเดิมจะถูกลบเมื่ออัปโหลดรูปใหม่หรือนำรูปออก ฟีเจอร์นี้ต้องใช้ PHP extension `gd` และใช้ `exif` เพื่อหมุนรูปจากมือถือให้ถูกทิศ
 
 Facebook และ LINE เก็บข้อมูลหน้าไว้ชั่วคราว หลังแก้ไขให้กด “Scrape Again” ใน Sharing Debugger และโซเชียลจะอ่าน Meta Tag ไม่ได้ระหว่างที่เปิดจำกัดการเข้าชม
+
+## รถตามจำนวนผู้เดินทาง
+
+กรอกที่ **โปรแกรม → 04 บริการ → รถตามจำนวนผู้เดินทาง** แต่ละแถวมีจำนวนคนขั้นต่ำ–สูงสุด ประเภทรถ และจำนวนที่นั่ง เก็บแยกรายโปรแกรมใน `tours.vehicle_options` เพราะรถต่างกันตามผู้ให้บริการ โปรแกรมที่ไม่กรอกจะไม่แสดงหัวข้อนี้ ปุ่ม “ใส่ตารางตัวอย่าง” เติม 5 แถวให้แก้ต่อ ควรตรวจกับผู้ให้บริการก่อนเผยแพร่ ระบบไม่ตรวจว่าตารางตรงกับข้อความ “รถและการรับส่ง”
+
+แต่ละแถวอัปโหลดรูปรถจริงได้ (JPG, PNG, WebP ไม่เกิน 5 MB) รูปขึ้นทีละไฟล์ผ่าน `/admin/tours/hotel-photo` เก็บใน `public/uploads/tours/{tour_id}/images` และแสดงบนเว็บเมื่อกดบันทึกโปรแกรม กดดูรูปขยายบนหน้าโปรแกรมได้ แถวที่ไม่มีรูปใช้ภาพวาด SVG ตามประเภทรถจาก `public/images/vehicles/` รูปที่เอาออกหรืออัปโหลดทับจะถูกลบหลังบันทึก ส่วนรูปที่อัปแล้วแต่ไม่ได้บันทึกจะค้างในโฟลเดอร์ของโปรแกรม
+
+ประเภทรถกำหนดใน `App\Support\VehicleOptions::types()` การนำเข้าทัวร์จาก JSON ยังไม่รองรับหัวข้อนี้
+
+### Template รถ
+
+จัดการที่ `/admin/vehicle-templates` (สิทธิ์ `tours.manage`) หรือกด “บันทึกตารางนี้เป็น template” ในหน้าแก้ไขโปรแกรม แล้วเลือก template และกด “ใช้ template นี้” ตอนลงโปรแกรม ระบบคัดลอกแถวเข้าโปรแกรม จึงแก้เฉพาะโปรแกรมนั้นได้ และการแก้หรือลบ template ไม่เปลี่ยนโปรแกรมที่ลงไปแล้ว
+
+รูปของ template เก็บใน `public/uploads/vehicle-templates` และโปรแกรมที่ดึงไปใช้อ้างไฟล์เดียวกัน ไฟล์จะถูกลบเมื่อไม่มีโปรแกรมหรือ template ใดใช้แล้ว ส่วนการบันทึกจากโปรแกรมจะคัดลอกรูปของโปรแกรมนั้นไปเก็บเป็นไฟล์ของ template

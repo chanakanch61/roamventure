@@ -497,6 +497,94 @@ if (editor) {
  editor.addEventListener('submit', () => { reorderInputs('.day-item', 'itinerary'); reorderInputs('.gallery-edit', 'images'); });
 }
 
+document.querySelectorAll('.vehicle-edit').forEach(vehicleEdit => {
+ const form = vehicleEdit.closest('form'), list = vehicleEdit.querySelector('#vehicle-list'), sample = vehicleEdit.querySelector('[data-vehicle-sample]');
+ const token = () => form.querySelector('input[name=_token]').value;
+ const settings = vehicleEdit.dataset;
+ const select = vehicleEdit.querySelector('[data-vehicle-template-select]'), templateStatus = vehicleEdit.querySelector('[data-vehicle-template-status]');
+ let next = Number(settings.vehicleNext), uploads = 0;
+ const setPhoto = (row, path) => {
+  const type = row.querySelector('[data-vehicle-type]'), preview = row.querySelector('[data-vehicle-preview]');
+  row.querySelector('[data-vehicle-image]').value = path;
+  preview.src = path ? settings.assetBase + path : type.selectedOptions[0].dataset.image;
+  preview.classList.toggle('is-photo', Boolean(path));
+  row.querySelector('[data-vehicle-pick-label]').textContent = path ? 'เปลี่ยนรูปรถ' : 'อัปโหลดรูปรถจริง';
+  row.querySelector('[data-vehicle-photo-remove]').hidden = !path;
+ };
+ const add = values => {
+  list.insertAdjacentHTML('beforeend', vehicleEdit.querySelector('#vehicle-template').innerHTML.replaceAll('__INDEX__', next++));
+  const row = list.lastElementChild;
+  sample.hidden = true;
+  Object.entries(values || {}).forEach(([field, value]) => { row.querySelector('[name$="[' + field + ']"]').value = value; });
+  setPhoto(row, values?.image || '');
+  if (values?.image) row.querySelector('[data-vehicle-status]').textContent = '';
+ };
+ const readRows = () => [...list.children].map(row => Object.fromEntries(['min', 'max', 'type', 'seats', 'image'].map(field => [field, row.querySelector('[name$="[' + field + ']"]').value])));
+ const applyTemplate = () => {
+  const option = select.selectedOptions[0];
+  if (!option.value) { templateStatus.textContent = 'เลือก template ก่อน'; return; }
+  if (list.children.length && !confirm('แทนที่ตารางรถในโปรแกรมนี้ด้วย ' + option.textContent + '?')) return;
+  list.replaceChildren();
+  JSON.parse(option.dataset.rows).forEach(add);
+  templateStatus.textContent = 'ใช้ ' + option.textContent + ' แล้ว แก้เฉพาะโปรแกรมนี้ได้ ตารางจะแสดงบนเว็บเมื่อบันทึกโปรแกรม';
+ };
+ const saveTemplate = async () => {
+  if (uploads) { templateStatus.textContent = 'กรุณารอให้อัปโหลดรูปเสร็จก่อน'; return; }
+  if (!list.children.length) { templateStatus.textContent = 'เพิ่มรถอย่างน้อย 1 แถวก่อนบันทึกเป็น template'; return; }
+  const name = (prompt('ตั้งชื่อ template เช่น Land A') || '').trim();
+  if (!name) return;
+  const data = new FormData();
+  data.append('_token', token());
+  data.append('name', name);
+  data.append('folder', settings.uploadFolder);
+  data.append('rows', JSON.stringify(readRows()));
+  templateStatus.textContent = 'กำลังบันทึก template …';
+  try {
+   const response = await fetch(settings.templateSaveUrl, { method: 'POST', body: data, credentials: 'same-origin', headers: { Accept: 'application/json' } });
+   const result = await response.json();
+   if (!response.ok || !result.id) throw Error(result.error || 'บันทึก template ไม่สำเร็จ');
+   const option = new Option(result.name, result.id, true, true);
+   option.dataset.rows = JSON.stringify(result.rows);
+   select.add(option);
+   templateStatus.textContent = 'บันทึก template “' + result.name + '” แล้ว ใช้กับโปรแกรมอื่นได้ทันที';
+  } catch (error) { templateStatus.textContent = error.message; }
+ };
+ vehicleEdit.addEventListener('click', event => {
+  const button = event.target.closest('button'); if (!button) return;
+  if (button.hasAttribute('data-vehicle-add')) { if (list.children.length < 12) add(); else alert('เพิ่มรถได้สูงสุด 12 แถว'); }
+  if (button.hasAttribute('data-vehicle-sample')) JSON.parse(button.dataset.rows).forEach(add);
+  if (button.hasAttribute('data-vehicle-remove')) { button.closest('.vehicle-row').remove(); sample.hidden = list.children.length > 0; }
+  if (button.hasAttribute('data-vehicle-photo-remove')) { const row = button.closest('.vehicle-row'); setPhoto(row, ''); row.querySelector('[data-vehicle-status]').textContent = 'จะใช้ภาพวาดแทนเมื่อบันทึก'; }
+  if (button.hasAttribute('data-vehicle-template-apply')) applyTemplate();
+  if (button.hasAttribute('data-vehicle-template-save')) saveTemplate();
+ });
+ vehicleEdit.addEventListener('change', async event => {
+  const row = event.target.closest('.vehicle-row'); if (!row) return;
+  if (event.target.matches('[data-vehicle-type]')) { setPhoto(row, row.querySelector('[data-vehicle-image]').value); return; }
+  if (!event.target.matches('[data-vehicle-file]') || !event.target.files[0]) return;
+  const status = row.querySelector('[data-vehicle-status]'), data = new FormData();
+  data.append('_token', token());
+  data.append('folder', settings.uploadFolder);
+  data.append('photo', event.target.files[0]);
+  event.target.value = '';
+  status.textContent = 'กำลังอัปโหลดรูป …';
+  uploads++;
+  try {
+   const response = await fetch(settings.uploadUrl, { method: 'POST', body: data, credentials: 'same-origin', headers: { Accept: 'application/json' } });
+   const result = await response.json();
+   if (!response.ok || !result.path) throw Error(result.error || 'อัปโหลดไม่สำเร็จ');
+   setPhoto(row, result.path);
+   status.textContent = 'อัปโหลดแล้ว รูปจะแสดงเมื่อกดบันทึก';
+  } catch (error) { status.textContent = error.message; }
+  uploads--;
+ });
+ form.addEventListener('submit', event => {
+  if (!uploads) return;
+  event.preventDefault(); event.stopImmediatePropagation();
+  alert('กำลังอัปโหลดรูปรถ กรุณารอให้เสร็จก่อนบันทึก');
+ }, true);
+});
+
 document.querySelectorAll('[data-branding-upload]').forEach(input=>{
  let objectUrl;
  input.addEventListener('change',()=>{

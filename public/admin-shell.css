@@ -132,3 +132,24 @@
 .airline-logo-slot .branding-preview span{font-size:11px;color:#5f5f5f;text-align:center}
 .booking-flights td,.booking-flights th{white-space:nowrap}
 @media(max-width:540px){.flight-row-airline{grid-column:auto}}
+.vehicle-edit{margin-top:24px;padding-top:20px;border-top:1px solid #e4e4e4}
+.vehicle-edit h3{margin:0}
+.vehicle-edit [hidden]{display:none}
+.vehicle-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));align-items:end;gap:10px 12px;margin-bottom:12px;padding-bottom:14px;border-bottom:1px solid #e4e4e4}
+.vehicle-row .text-button{justify-self:start;align-self:center}
+.vehicle-row-photo{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+.vehicle-row-photo img{width:128px;height:72px;object-fit:contain;padding:4px 6px;background:#f1f1ef;border:1px solid #e4e4e4;border-radius:3px}
+.vehicle-row-photo img.is-photo{padding:0;object-fit:cover}
+.vehicle-row-photo>div{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+.vehicle-row-photo small{flex-basis:100%;font-size:12px;color:#6c6c6c}
+.vehicle-pick{position:relative;cursor:pointer}
+.vehicle-pick input{position:absolute;width:1px;height:1px;opacity:0}
+.vehicle-pick:focus-within{outline:2px solid #313131;outline-offset:2px}
+.vehicle-edit .section-head>div:first-child{flex:1;min-width:0}
+.vehicle-edit .section-head .actions{flex:none}
+.vehicle-row-photo .vehicle-pick{min-height:0;padding:8px 14px;font-size:13px;font-weight:600;line-height:1.4}
+.vehicle-row-photo .vehicle-pick span{font-size:13px;font-weight:600}
+.vehicle-template-bar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 14px;margin:0 0 18px;padding:14px;background:#f7f7f7;border:1px solid #e4e4e4;border-radius:3px}
+.vehicle-template-bar label{flex:1 1 220px;min-width:0}
+.vehicle-template-bar small{flex-basis:100%;font-size:12px;color:#6c6c6c}
+.vehicle-template-bar small:empty{display:none}

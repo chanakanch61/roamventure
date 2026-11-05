@@ -13,6 +13,7 @@ use App\Repositories\PackageLevelRepository;
 use App\Repositories\PassportRepository;
 use App\Repositories\TourSearchRepository;
 use App\Repositories\TripRepository;
+use App\Repositories\VehicleTemplateRepository;
 use LogicException;
 
 /** Short property access ($this->trips, $this->billing, ...) to the shared per-request services. */
@@ -27,6 +28,7 @@ trait ResolvesServices
             'places' => DestinationRepository::class,
             'package_levels' => PackageLevelRepository::class,
             'airlines' => AirlineRepository::class,
+            'vehicle_templates' => VehicleTemplateRepository::class,
             'access' => AdminAccessRepository::class,
             'home_places' => HomeDestinationRepository::class,
             'tour_search' => TourSearchRepository::class,
