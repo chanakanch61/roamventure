@@ -1,0 +1,99 @@
+/* RoamVenture showcase — departure board and floating team chat in the monochrome palette. Public pages only; loaded after travel-experience.css. */
+.rv-board-panel{border:1px solid #ffffff1f;border-radius:18px;background:linear-gradient(180deg,#161616,#0f0f0f);box-shadow:0 30px 80px #00000070;overflow:hidden}
+.rv-board-labels,.rv-board-row{display:grid;grid-template-columns:118px 132px minmax(0,1fr) 170px 104px 116px 42px;align-items:center;gap:20px;padding-inline:28px}
+.rv-board-labels{padding-block:15px;border-bottom:1px solid #ffffff14;color:#8d8d8d;font-size:11px;letter-spacing:2.2px}
+.rv-board-labels span:last-child{text-align:right}
+.rv-board-list{list-style:none;margin:0;padding:0}
+.rv-board-list li+li{border-top:1px solid #ffffff10}
+.rv-board-row{position:relative;padding-block:20px;color:var(--ink);transition:background-color .3s}
+.rv-board-row:before{content:'';position:absolute;left:0;top:18%;bottom:18%;width:2px;background:var(--accent);transform:scaleY(0);transition:transform .35s var(--ease)}
+.rv-board-row:hover,.rv-board-row:focus-visible{background:#ffffff08}
+.rv-board-row:hover:before,.rv-board-row:focus-visible:before{transform:scaleY(1)}
+.rv-board-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+
+/* Split-flap tiles: one tile per character once script runs, a single tile without it. */
+.rv-board-date{display:flex;align-items:center;gap:10px}
+.rv-board-date small{display:grid;color:#a9a9a9;font-size:12px;letter-spacing:1.6px;line-height:1.35}
+.rv-board [data-flap]{display:inline-flex;gap:3px;font-family:'Plus Jakarta Sans',sans-serif;font-variant-numeric:tabular-nums;font-weight:700;line-height:1}
+.rv-board [data-flap]:not(.is-tiled),.rv-flap-tile{position:relative;padding:7px 6px;border-radius:5px;background:linear-gradient(#262626 0 50%,#1c1c1c 50%);box-shadow:inset 0 1px #ffffff14,0 2px 6px #0007}
+.rv-board [data-flap]:not(.is-tiled):after,.rv-flap-tile:after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:#0b0b0b}
+.rv-flap-tile{display:inline-block;width:1.2em;text-align:center}
+.rv-board-date [data-flap]{font-size:26px}
+.rv-board-code{max-width:100%;overflow:hidden;font-size:13px;letter-spacing:.5px;color:#dcdcdc;text-overflow:ellipsis;white-space:nowrap}
+.rv-board-code .rv-flap-tile{width:1.25em;padding:6px 0}
+.rv-board-trip{display:grid;gap:6px;min-width:0}
+.rv-board-trip strong{overflow:hidden;font-size:16px;font-weight:600;line-height:1.55;text-overflow:ellipsis;white-space:nowrap}
+.rv-board-trip small{display:flex;align-items:center;gap:5px;color:#9d9d9d;font-size:13px}
+.rv-board-trip small .material-icons{font-size:16px}
+.rv-board-seats{display:grid;gap:8px;color:#c9c9c9;font-size:13px}
+.rv-board-seats i{position:relative;display:block;height:4px;border-radius:4px;background:#ffffff1a;overflow:hidden}
+.rv-board-seats i:after{content:'';position:absolute;inset:0 auto 0 0;width:calc(var(--fill,0) * 100%);border-radius:inherit;background:var(--accent)}
+.rv-board-status{justify-self:start;display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border:1px solid #ffffff38;border-radius:99px;color:#d6d6d6;font-size:12px;white-space:nowrap}
+.rv-board-status:before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.rv-board-status.is-last{border-color:var(--accent);background:var(--accent);color:#0b0b0b}
+.rv-board-status.is-last:before{animation:rv-board-pulse 1.6s ease-in-out infinite}
+.rv-board-price{font-size:19px;font-weight:700;text-align:right;letter-spacing:-.3px}
+.rv-board-go{display:grid;place-items:center;width:42px;height:42px;border:1px solid #ffffff33;border-radius:50%;transition:background-color .3s,color .3s,transform .4s var(--ease)}
+.rv-board-go .material-icons{font-size:19px}
+.rv-board-row:hover .rv-board-go{background:var(--accent);color:#0b0b0b;transform:rotate(45deg)}
+@keyframes rv-board-pulse{50%{opacity:.25}}
+@media(max-width:1199px){.rv-board-labels,.rv-board-row{grid-template-columns:112px minmax(0,1fr) 150px 104px 110px 42px;gap:16px;padding-inline:22px}.rv-board-labels span:nth-child(2),.rv-board .rv-board-code{display:none}}
+@media(max-width:900px){.rv-board-labels{display:none}.rv-board-row{grid-template-columns:96px minmax(0,1fr) auto;grid-template-areas:"date trip price" "date seats status";row-gap:12px}.rv-board-date{grid-area:date}.rv-board-trip{grid-area:trip}.rv-board-seats{grid-area:seats}.rv-board-status{grid-area:status;justify-self:end}.rv-board-price{grid-area:price}.rv-board-go{display:none}.rv-board .rv-board-code{display:none}}
+@media(max-width:540px){.rv-board-panel{border-radius:14px}.rv-board-row{grid-template-columns:70px minmax(0,1fr) auto;column-gap:12px;padding:16px}.rv-board-date{flex-direction:column;align-items:flex-start;gap:6px}.rv-board-date [data-flap]{font-size:21px}.rv-board-date small{display:block;font-size:11px}.rv-board-trip strong{font-size:14px;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.rv-board-trip small{font-size:12px}.rv-board-price{font-size:16px;align-self:start}.rv-board-status{font-size:11px;padding:5px 10px}}
+
+/* The chat pill anchors the bottom-right dock; back-to-top stacks above it. */
+.rv-chat{position:fixed;right:24px;bottom:24px;z-index:19;display:inline-flex;align-items:center;gap:9px;height:48px;padding:0 20px 0 16px;border-radius:99px;background:var(--accent);color:#0b0b0b;font-size:14px;font-weight:600;box-shadow:0 12px 30px #00000066;transition:translate .3s var(--ease),box-shadow .3s}
+.rv-chat:hover{translate:0 -3px;box-shadow:0 18px 40px #00000088}
+.rv-chat:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.rv-chat .material-icons{font-size:20px}
+.travel-experience .travel-back-top{right:25px;bottom:84px}
+@media(max-width:800px){.travel-experience:has(.trip-mobile-action) .rv-chat{bottom:92px}.travel-experience:has(.trip-mobile-action) .travel-back-top{bottom:150px}}
+@media(max-width:767px){.rv-chat{right:14px;bottom:18px;width:48px;padding:0;justify-content:center}.rv-chat span{display:none}.travel-experience .travel-back-top{right:16px;bottom:76px}}
+@media print{.rv-chat{display:none}}
+
+/* Type floor: earlier layers set labels as small as 7px. Latin caps labels stay at 11px; Thai text people read stays at 12px.
+   !important is deliberate because those sizes come from many ID- and media-scoped rules across older layers. */
+body.public-dark :is(.eyebrow,.rv-kicker,.hero-caption>span,.adventure-label,.gal-overline,.gal-count,.gal-deck-drag,.hpg-overline,.hpg-category,.hpg-chapter,.hpg-photo-tag,.journal-kicker>span,.journal-section-label>span,.blog-eyebrow,.journal-photo-label,.rv-image-label,.rv-hero-foot>span,.rv-faq-number,.card-badge,.day-label,.card-period-availability,.rv-prep-list span,.gal-deck-thumbs button>span){font-size:11px!important}
+body.public-dark :is(.fineprint,.card-period-hint,.card-services>span,.card-periods-heading>span,.card-bottom small,.row-tour-note,.blog-card-meta>*,.home-journal-meta>*,.journal-card-foot>span,.meal-row>span,.booking-total>small,.traveler-field>small,.rv-field>span,.rv-form-help,.rv-char-count,.included,.pill,.gal-card-meta>span,.gal-deck-caption>small,.gal-total>small,.gal-filters>label,.gal-search,.hpg-album-name>span,.hpg-bottom>span,.hpg-counter>span,.trip-photo>span,.trip-at-glance>div>span,.quantity-control>div>span,.trip-mobile-action small,td>small,th){font-size:12px!important}
+
+/* Prices never break mid-number on narrow cards. */
+body.public-dark .card-bottom{flex-wrap:wrap}body.public-dark .tour-card:not(.tour-card-row) .card-bottom>div{flex:1 0 auto}body.public-dark .card-bottom strong{white-space:nowrap}
+@media(max-width:374px){body.public-dark .hero-text-link{font-size:12px!important}}
+
+/* On phones the caption loses its right-hand half, so it centres with the rest of the hero. */
+@media(max-width:767px){body.public-dark .hero-caption{justify-content:center;text-align:center}}
+@media(max-width:374px){body.public-dark .hero-caption{letter-spacing:.6px}}
+
+/* Home hero: the wordmark sizes to its own column, so any brand word fills about 93% of the width with even margins.
+   Padding cancels the trailing letter-spacing that browsers add after the last glyph, which otherwise shifts centred text. */
+body.public-dark .adventure-heading{container-type:inline-size}
+body.public-dark .adventure-heading .hero-display{font-size:min(260px,17.6cqi);padding-right:.025em}
+body.public-dark .adventure-heading .hero-display>span{padding-left:15px}
+body.public-dark .adventure-heading .adventure-kicker{padding-left:2px}
+@media(max-width:767px){body.public-dark .adventure-heading .hero-display>span{padding-left:6px}body.public-dark .adventure-heading .adventure-kicker{padding-left:.4px}}
+/* Story card and postcards share one row under the wordmark, mirrored to the container edges, instead of fixed offsets that collide as it grows. */
+@media(min-width:768px){
+ body.public-dark #main>.home-slider .hero-content{display:grid;grid-template-columns:auto minmax(0,1fr);align-content:start}
+ body.public-dark .home-slider :is(.hero-caption,.adventure-heading,.hero-bottom-note){grid-column:1/-1}
+ body.public-dark .home-slider .adventure-heading{margin-bottom:clamp(40px,3.6vw,56px)}
+ body.public-dark .home-slider .adventure-story{grid-column:1;margin-top:0;align-self:center}
+ body.public-dark .home-slider .adventure-postcards{position:relative;top:auto;right:auto;grid-column:2;justify-self:end;align-self:start}
+}
+
+/* Scroll stage (scroll-stage.js). Lenis rules come from lenis 1.3.26 dist/lenis.css (MIT). */
+html.lenis,html.lenis body{height:auto}
+/* Lenis owns smoothing; native smooth focus scrolling would race its animations. */
+html.lenis{scroll-behavior:auto}
+.lenis:not(.lenis-autoToggle).lenis-stopped{overflow:clip}
+.lenis [data-lenis-prevent],.lenis [data-lenis-prevent-wheel],.lenis [data-lenis-prevent-touch],.lenis [data-lenis-prevent-vertical],.lenis [data-lenis-prevent-horizontal]{overscroll-behavior:contain}
+.lenis.lenis-smooth iframe{pointer-events:none}
+.lenis.lenis-autoToggle{transition-property:overflow;transition-duration:1ms;transition-behavior:allow-discrete}
+/* Depth uses the translate property so it never fights the transform animations and transitions these elements already have. */
+body.public-dark .home-slider .hero-picture,body.public-dark .why-image>img,body.public-dark .why-image .photo-note{translate:0 var(--rv-depth,0px)}
+body.public-dark .steps-grid{position:relative}
+.rv-steps-line{position:absolute;left:0;right:0;top:-22px;height:1px;background:linear-gradient(90deg,var(--accent),#ffffff40);transform:scaleX(var(--rv-progress,0));transform-origin:left;pointer-events:none}
+.rv-steps-armed>div>span{transition:opacity .5s,color .5s}
+.rv-steps-armed>div:not(.is-lit)>span{opacity:.28}
+.rv-steps-armed>div.is-lit>span{color:var(--accent)}
+@media(max-width:540px){.rv-steps-line{display:none}}
+.footer-wordmark .rv-mark-roam{display:inline-block;font:inherit}

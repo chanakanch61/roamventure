@@ -1,0 +1,23 @@
+<link rel="stylesheet" href="<?= base_url() ?>public/home-destinations-admin.css">
+<div class="section-head"><div><span class="eyebrow">HOMEPAGE DESTINATIONS</span><h1>จุดหมายแนะนำหน้าแรก</h1><p>แสดงทุกเส้นทางที่มีโปรแกรมโดยอัตโนมัติ หรือเลือกเส้นทางเองสูงสุด 4 ใบ พร้อมภาพและลำดับของคุณ</p></div><a class="outline-link" href="<?= base_url() ?>" target="_blank" rel="noopener">ดูหน้าแรก ↗</a></div>
+<?php foreach ($errors as $error): ?><p class="notice error" role="alert"><?= e($error) ?></p><?php endforeach ?>
+<form method="post" enctype="multipart/form-data" id="home-destination-form" class="stack-form">
+<?= csrf_field() ?>
+<section class="panel stack-form"><label class="checkbox"><input type="checkbox" name="enabled" value="1" <?= $config['enabled'] ? 'checked' : '' ?>>เปิดแสดงส่วนจุดหมายแนะนำ</label>
+<div class="form-grid"><label>ข้อความเหนือหัวข้อ<input name="eyebrow" maxlength="80" value="<?= e($config['eyebrow']) ?>"></label><label>หัวข้อ *<input name="title" maxlength="120" required value="<?= e($config['title']) ?>"></label></div>
+<label>คำโปรย<textarea name="description" maxlength="400" rows="2"><?= e($config['description']) ?></textarea></label>
+<label>การเลือกจุดหมาย<select name="mode"><option value="auto" <?= $config['mode']==='auto' ? 'selected' : '' ?>>อัตโนมัติ — ทุกเส้นทางที่มีโปรแกรม เรียงจากจำนวนโปรแกรมมากไปน้อย</option><option value="manual" <?= $config['mode']==='manual' ? 'selected' : '' ?>>เลือกเอง — ใช้การ์ดด้านล่าง</option></select></label>
+<p>นับโปรแกรมที่เผยแพร่ทั้งทัวร์และแพ็คเกจส่วนตัว โดยไม่ตรวจรอบว่าง · เส้นทางที่ไม่มีโปรแกรมจะถูกซ่อน · โหมดเลือกเอง หากไม่มีการ์ดที่แสดงได้ จะแสดงทุกเส้นทางแทน</p></section>
+<section class="panel"><div class="section-head"><div><h2>การ์ดที่เลือกเอง</h2><p>ลากแถบ “ย้ายการ์ด” หรือใช้ปุ่มขึ้น/ลง · เว้นจุดหมายว่างเพื่อไม่ใช้การ์ดใบนั้น</p></div><a class="text-link" href="<?= base_url() ?>admin/destinations">จัดการจุดหมาย ↗</a></div>
+<p id="destination-auto-note" role="status">โหมดอัตโนมัติจะไม่ใช้การ์ดด้านล่าง เปลี่ยนเป็น “เลือกเอง” เพื่อแสดงตามที่จัดไว้</p>
+<div class="home-destination-editors" id="destination-editors">
+<?php for ($i=0;$i<4;$i++): $card=$config['cards'][$i] ?? ['node_id'=>0,'enabled'=>1,'image'=>'']; $selected=null; foreach ($choices as $choice) if ((int)$choice['id']===(int)$card['node_id']) $selected=$choice; ?>
+<article class="destination-editor" data-slot="<?= $i ?>"><div class="repeater-head"><span class="destination-drag" draggable="true" tabindex="0">⠿ ย้ายการ์ด <b data-position><?= $i+1 ?></b></span><div><button type="button" class="icon-btn" data-move="up" aria-label="เลื่อนการ์ดขึ้น">↑</button><button type="button" class="icon-btn" data-move="down" aria-label="เลื่อนการ์ดลง">↓</button></div></div>
+<label>จุดหมาย<select name="cards[<?= $i ?>][node_id]" data-node><option value="">ไม่แสดงการ์ดนี้</option><?php foreach ($choices as $choice): ?><option value="<?= (int)$choice['id'] ?>" data-name="<?= e($choice['name']) ?>" data-total="<?= (int)$choice['total'] ?>" data-image="<?= e(tour_image($choice['cover'])) ?>" <?= (int)$card['node_id']===(int)$choice['id'] ? 'selected' : '' ?>><?= e($choice['name'].' · '.$choice['parent_name']) ?> (<?= (int)$choice['total'] ?> โปรแกรม)</option><?php endforeach ?></select></label>
+<label class="checkbox"><input type="checkbox" name="cards[<?= $i ?>][enabled]" value="1" <?= $card['enabled'] ? 'checked' : '' ?>>เปิดแสดงการ์ดนี้</label>
+<div class="destination-card destination-preview" data-saved-image="<?= $card['image'] ? e(tour_image($card['image'])) : '' ?>"><img src="<?= e(tour_image($card['image'] ?: ($selected['cover'] ?? ''))) ?>" alt="ตัวอย่างการ์ด"><div><h3 data-preview-name><?= e($selected['name'] ?? 'เลือกจุดหมาย') ?></h3><span data-preview-total><?= (int)($selected['total'] ?? 0) ?> โปรแกรม</span></div></div>
+<label>รูปการ์ด<input type="file" name="image_<?= $i ?>" accept="image/jpeg,image/png,image/webp" data-image></label><small>แนะนำ 1000 × 1200 px · JPG, PNG, WebP ไม่เกิน 5 MB · ไม่ใส่รูปจะใช้รูปปกเส้นทาง หรือรูปโปรแกรมถ้าไม่มีรูปปก</small>
+<?php if ($card['image']): ?><label class="checkbox"><input type="checkbox" name="cards[<?= $i ?>][remove_image]" value="1" data-remove-image>ลบรูปเฉพาะและใช้รูปปกเส้นทางหรือรูปโปรแกรม</label><?php endif ?>
+<p data-card-status></p></article><?php endfor ?>
+</div></section><input type="hidden" name="card_order" value="0,1,2,3"><input type="hidden" name="form_complete" value="1"><div class="actions"><button type="submit" class="btn">บันทึกจุดหมายแนะนำ</button><span>ตัวอย่างภาพเปลี่ยนทันที · หน้าเว็บเปลี่ยนหลังบันทึก</span></div></form>
+<script src="<?= base_url() ?>public/home-destinations-admin.js" defer></script>

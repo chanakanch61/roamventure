@@ -1,0 +1,62 @@
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(material-icons.ttf) format('truetype');
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+}
+
+/* Keep icon glyphs independent of typography and chip styles around them. */
+body .material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 1.25em;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  overflow: hidden;
+  -webkit-text-stroke: 0;
+}
+body .search-icon.material-icons{font-size:22px}
+
+/* Size controls by role instead of multiplying inherited text sizes. */
+body :is(.btn,.outline-link,.card-detail-link,.trip-departure-button) .material-icons{font-size:20px}
+body :is(.menu-toggle,.slider-controls button,.related-slider-controls button,.trip-lightbox button,.quantity-control button,.date-range-close) .material-icons{font-size:24px}
+body :is(.card-services,.detail-meta,.meal-row) .material-icons{font-size:16px}
+body :is(.image-arrow,.destination-card>b,.benefit-strip>div>span,.home-journal-arrow,.journal-photo-arrow){display:inline-flex;align-items:center;justify-content:center;line-height:1}
+body :is(.image-arrow,.destination-card>b,.home-journal-arrow,.journal-photo-arrow) .material-icons{font-size:22px}
+body .benefit-strip>div>span .material-icons{font-size:26px}
+body :is(.slider-controls button,.related-slider-controls button,.quantity-control button,.date-range-close){align-items:center;justify-content:center}
+body .rv-company .rv-social-top .rv-social-mark.material-icons{display:grid;place-items:center;width:52px;height:52px;border-radius:16px;font-size:28px;line-height:1}
+body .rv-channel-icon .material-icons{font-size:34px}
+body .rv-marquee i .material-icons{font-size:1em}
+body .footer-wordmark{display:flex;align-items:center;white-space:nowrap;font-size:clamp(30px,10.5vw,155px)}
+body .footer-wordmark>span{display:inline-flex;align-items:center;white-space:nowrap}
+body .footer-wordmark .material-icons{font-size:.8em;margin-left:.08em}

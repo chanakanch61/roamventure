@@ -1,0 +1,2 @@
+# Application code lives here. Only public/ is served; its own .htaccess re-grants access.
+Require all denied

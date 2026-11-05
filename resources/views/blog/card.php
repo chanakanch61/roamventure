@@ -1,0 +1,5 @@
+<?php $url=base_url().'blog/'.rawurlencode($p['slug']); ?>
+<article class="blog-card journal-card">
+<a class="blog-card-image" href="<?= e($url) ?>" tabindex="-1" aria-hidden="true"><img src="<?= e(tour_image($p['cover'])) ?>" alt="<?= e($p['cover_alt']) ?>" loading="lazy" style="view-transition-name:journal-cover-<?= (int)$p['id'] ?>"><span class="journal-photo-label"><?= e($p['category_name'] ?: 'เรื่องเล่าการเดินทาง') ?></span></a>
+<div class="journal-card-copy"><div class="blog-card-meta"><time datetime="<?= e(date('Y-m-d',strtotime($p['published_at']))) ?>"><?= thai_date($p['published_at']) ?></time><span><i class="material-icons" aria-hidden="true">schedule</i> อ่าน <?= reading_minutes($p['content']) ?> นาที</span></div><h2><a href="<?= e($url) ?>"><?= e($p['title']) ?></a></h2><p><?= e($p['excerpt'] ?: mb_substr(html_entity_decode(strip_tags($p['content']),ENT_QUOTES,'UTF-8'),0,160)) ?></p><div class="journal-card-foot"><span><?= e($p['author'] ?: 'RoamVenture') ?></span><span class="journal-card-read" aria-hidden="true">อ่านเรื่องราว <i class="material-icons" aria-hidden="true">north_east</i></span></div></div>
+</article>

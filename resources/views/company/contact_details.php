@@ -1,0 +1,10 @@
+<section class="container rv-contact-details" aria-label="ทีมขายและข้อมูลสำนักงาน">
+ <?php if ($contact['sales'] || $contact['hours']): ?>
+ <div class="rv-contact-info">
+  <?php if ($contact['sales']): ?><div class="rv-team-block"><span class="rv-kicker">YOUR TRAVEL PARTNERS</span><h2>คุยกับทีมขายโดยตรง</h2><p>เลือกติดต่อเซลส์ที่ดูแลคุณ แล้วมาวางแผนทริปด้วยกัน</p><div class="rv-sales-list">
+  <?php foreach ($contact['sales'] as $person): ?><a class="rv-sales-person" href="tel:<?= e(preg_replace('/[^+0-9]/','',$person['phone'])) ?>"><span class="rv-person-icon" aria-hidden="true"><i class="material-icons" aria-hidden="true">north_east</i></span><span><strong><?= e($person['name']) ?></strong><span><?= e($person['phone']) ?></span></span><span class="rv-call-label">โทรเลย <i class="material-icons" aria-hidden="true">north_east</i></span></a><?php endforeach ?>
+  </div></div><?php endif ?>
+  <?php if ($contact['hours']): ?><aside class="rv-hours"><span class="rv-kicker">BUSINESS HOURS</span><h2>วันและเวลาทำการ</h2><p><?= nl2br(e($contact['hours'])) ?></p><span class="rv-hours-note">ฝากข้อความผ่านช่องทางออนไลน์ได้<br>ทีมงานจะติดต่อกลับในเวลาทำการ</span></aside><?php endif ?>
+ </div><?php endif ?>
+ <?php if ($contact['address'] || $contact['map_embed'] || $contact['map_url']): ?><div class="rv-office"><div class="rv-office-copy"><span class="rv-kicker">COME SAY HELLO</span><h2>แวะมาคุยเรื่องทริป</h2><?php if ($contact['address']): ?><address><?= nl2br(e($contact['address'])) ?></address><?php endif ?><p>กรุณาติดต่อทีมงานเพื่อนัดหมายก่อนเดินทาง</p><?php if ($contact['map_url']): ?><a class="rv-link" href="<?= e($contact['map_url']) ?>" target="_blank" rel="noopener noreferrer">เปิด Google Maps / นำทาง <i class="material-icons" aria-hidden="true">north_east</i></a><?php endif ?></div><?php if ($contact['map_embed']): ?><iframe class="rv-google-map" src="<?= e($contact['map_embed']) ?>" title="แผนที่สำนักงาน <?= e($brand) ?>" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe><?php endif ?></div><?php endif ?>
+</section>

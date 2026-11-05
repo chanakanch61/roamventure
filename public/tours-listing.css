@@ -1,0 +1,96 @@
+/* Shared tour and destination listings. */
+.listing-breadcrumb{flex-wrap:wrap;align-items:center;gap:8px 12px;color:#ccc;line-height:1.8;margin-bottom:24px;font-size:12px;overflow-wrap:anywhere}
+.listing-breadcrumb a:hover{color:#fff;text-decoration:underline;text-underline-offset:4px}
+.listing-breadcrumb [aria-current=page]{color:#fff}
+.hero-picture .destination-cover{height:100%;max-height:none;margin:0;border-radius:0}
+.tours-listing{min-width:0}
+.public-dark .destination-search .search-form{border-radius:18px}
+.public-dark .tours-listing .small-heading{font-size:clamp(20px,2vw,28px);letter-spacing:-.5px}
+.tours-listing .section-head .text-link{display:inline-flex;align-items:center;gap:6px;min-height:44px}
+.destination-tabs{gap:10px;margin:0 0 32px;padding:4px 3px 12px;max-width:100%}
+.public-dark .destination-tabs a{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:0 0 auto;min-height:44px;padding:10px 18px;border:1px solid #444;border-radius:999px;background:#181818;color:#ccc;font-size:13px;line-height:1.6;white-space:nowrap;transition:background .2s,color .2s,border-color .2s}
+.public-dark .destination-tabs a:hover{background:#292929;border-color:#888;color:#fff}
+.public-dark .destination-tabs a.active{background:#f5f5f3;border-color:#f5f5f3;color:#121212;font-weight:600}
+.destination-tabs img{width:22px;height:16px;object-fit:contain;border-radius:2px}
+.listing-tools{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.listing-count,.route-showcase-count{color:#aaa;font-size:14px}
+/* A shorter hero keeps the route cards close to the first screen. */
+#main>.hero.type-hero:not(.hero-with-search){min-height:500px}
+@media(min-width:761px){.public-dark.travel-experience .tour-card-row>.card-image{height:auto}}
+/* Route cards: the whole photo is the link to that route. */
+.public-dark.travel-experience .section.route-showcase{padding-bottom:0}
+.public-dark.travel-experience .route-showcase+.section.tours-listing{padding-top:72px}
+.public-dark.travel-experience .tours-listing+.section.channel-links{padding-top:0}
+.route-showcase .section-head{align-items:flex-end;gap:8px 24px;flex-wrap:wrap}
+.route-showcase-count{display:inline-flex;align-items:center;gap:8px;margin:0}
+.route-showcase-count .country-flag{width:24px;height:18px;object-fit:contain}
+.route-grid{display:flex;flex-wrap:wrap;gap:20px}
+.route-side{flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:20px}
+.route-side-label{color:#aaa;font-size:14px}
+.route-card{position:relative;isolation:isolate;display:flex;align-items:flex-end;min-width:0;overflow:hidden;border-radius:24px;background:#191919;color:#fff}
+.route-card>img{position:absolute;inset:0;z-index:-2;width:100%;height:100%;max-height:none;margin:0;border-radius:0;object-fit:cover;transition:transform .6s ease}
+.route-card:hover>img{transform:scale(1.04)}
+.route-card::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,#0000 35%,#000000e0 100%)}
+.route-card:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.route-card-main{flex:2 1 520px;min-height:540px}
+.route-card-large{flex:1 1 46%;min-width:280px;min-height:460px}
+.route-card-small{flex:1 1 30%;min-width:260px;min-height:340px}
+.route-card-tile{flex:1 1 230px;min-height:230px}
+.route-card-badge{position:absolute;top:14px;left:14px;padding:4px 12px;border-radius:999px;background:#0b0b0be6;color:#fff;font-size:12px;font-weight:600;line-height:1.6}
+.route-card-body{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;width:100%;padding:26px 28px}
+.route-card-text,.route-card-country,.route-card-meta,.route-card-price small,.route-card-price b{display:block}
+.route-card-text{min-width:0;flex:1 1 220px}
+.route-card-country{display:flex;align-items:center;gap:8px;font-size:14px}
+.route-card-country .country-flag{width:24px;height:18px;object-fit:contain}
+.route-card-country .material-icons{font-size:18px}
+.public-dark .route-card h3,.route-card h3{margin:0;color:#fff;font-size:clamp(32px,3.4vw,46px);font-weight:500;line-height:1.25;letter-spacing:-1px}
+.public-dark .route-card-main h3,.route-card-main h3{font-size:clamp(38px,4vw,54px)}
+.public-dark .route-card-small h3,.route-card-small h3,.public-dark .route-card-tile h3,.route-card-tile h3{font-size:clamp(24px,2.2vw,30px);letter-spacing:-.5px}
+.route-card-meta{color:#eee;font-size:14px;line-height:1.6}
+.route-card-action{display:flex;align-items:center;gap:16px}
+.route-card-price{text-align:right}
+.route-card-tile .route-card-price,.route-card-small .route-card-price{text-align:left}
+.route-card-price small{color:#ddd;font-size:12px;line-height:1.5}
+.route-card-price b{font-size:26px;font-weight:600;line-height:1.25}
+.route-card-tile .route-card-price b,.route-card-small .route-card-price b{font-size:20px}
+.route-card-price b.route-card-ask{font-size:18px}
+.route-card-arrow{display:inline-flex;align-items:center;justify-content:center;flex:none;width:48px;height:48px;border-radius:50%;background:#f5f5f3;color:#121212}
+/* Links to the other ways of travelling, under the program list. */
+.channel-links h2{margin-bottom:20px;font-size:clamp(22px,2vw,28px)}
+.channel-links-list{display:flex;flex-wrap:wrap;gap:16px}
+.channel-links-list a{flex:1 1 320px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:24px 28px;border:1px solid var(--line);border-radius:20px;background:var(--white);transition:border-color .2s}
+.channel-links-list a:hover{border-color:#888}
+.channel-links-list b,.channel-links-list small{display:block}
+.channel-links-list b{font-size:18px;font-weight:600}
+.channel-links-list small{color:#aaa;font-size:14px}
+/* Private package prices by service level and group size. */
+.row-tour-price small{display:block;font-size:13px;line-height:1.6;color:#bbb}
+.row-tour-price small.row-tour-flight{color:inherit;font-weight:600}
+.rate-table{margin-top:14px}
+.rate-levels{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.rate-levels button{min-height:44px;padding:8px 18px;border:1px solid #444;border-radius:999px;background:transparent;color:inherit;font-size:14px;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.rate-levels button:hover{border-color:#888}
+.rate-levels button[aria-pressed=true]{border-color:#f5f5f3;background:#f5f5f3;color:#121212;font-weight:600}
+.rate-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px}
+.rate-grid[hidden]{display:none}
+.rate-grid>div{padding:10px 12px;border:1px solid #333;border-radius:12px}
+.rate-grid span,.rate-grid b{display:block}
+.rate-grid span{color:#aaa;font-size:12px;line-height:1.5}
+.rate-grid b{font-size:16px;font-weight:600;line-height:1.5}
+.rate-note{margin-top:10px;color:#aaa;font-size:12px;line-height:1.6}
+@media(max-width:800px){
+ #main>.hero.type-hero:not(.hero-with-search){min-height:420px}
+ .destination-tabs{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#666 #202020;scroll-padding-inline:3px;-webkit-overflow-scrolling:touch}
+ .destination-tabs a{scroll-margin-inline:8px}
+ .listing-breadcrumb{font-size:11px;gap:6px 9px}
+}
+@media(max-width:540px){
+ .public-dark .destination-tabs a{padding:10px 14px;font-size:12px}
+ .tours-listing .section-head{align-items:center;justify-content:space-between;gap:8px 16px;flex-wrap:wrap}
+ .destination-search .search-types{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .route-card-main{min-height:440px}
+ .route-card-large{min-height:380px}
+ .route-card-small,.route-card-tile{min-height:280px}
+ .route-card-body{padding:20px 22px}
+ .channel-links-list a{padding:20px 22px}
+}

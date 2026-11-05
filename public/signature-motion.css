@@ -1,0 +1,39 @@
+/* RoamVenture signature motion — curtain image reveals, scroll-lit headings, hover sheen and drawn rules in the monochrome palette. Public pages only. */
+/* Hosts such as .blog-card-image>span and .trip-photo>span style their direct spans, so the layer resets them. */
+.rv-fx-host>.rv-fx[aria-hidden]{position:absolute;inset:0;z-index:20;display:block;margin:0;padding:0;border:0;background:none;opacity:1;pointer-events:none;overflow:hidden;border-radius:inherit;box-shadow:none;text-shadow:none}
+.rv-fx:before{content:'';position:absolute;inset:0;background:var(--accent,#f5f5f3);transform:scaleX(0);transform-origin:right}
+.rv-fx:after{content:'';position:absolute;left:50%;top:50%;width:200%;height:0;background:#f5f5f326;transform:translate(-50%,-50%) rotate(-45deg)}
+@media(hover:hover){.rv-fx-host:hover>.rv-fx:after,.tour-card:hover .rv-fx:after{height:250%;background:transparent;transition:height .6s linear,background-color .6s linear}}
+.rv-fx-host:focus-visible>.rv-fx:after{height:250%;background:transparent;transition:height .6s linear,background-color .6s linear}
+
+/* The slab wipes in, holds, then slides off while the photo settles from a slow zoom.
+   The wipe is a mask, not clip-path: IntersectionObserver treats a clipped target as invisible. */
+@property --rv-wipe{syntax:'<percentage>';inherits:false;initial-value:100%}
+.rv-curtain-pending,.rv-curtain-play{-webkit-mask-image:linear-gradient(90deg,#000 var(--rv-wipe),transparent var(--rv-wipe));mask-image:linear-gradient(90deg,#000 var(--rv-wipe),transparent var(--rv-wipe))}
+.rv-curtain-pending{--rv-wipe:0%}
+.rv-curtain-play{animation:rv-curtain-open .8s cubic-bezier(.77,0,.18,1) var(--curtain-delay,0ms) both}
+.rv-curtain-play>.rv-fx:before{animation:rv-curtain-slab 1.55s cubic-bezier(.77,0,.18,1) var(--curtain-delay,0ms) both}
+.rv-curtain-play>img,.rv-curtain-play>picture img{animation:rv-curtain-zoom 1.9s var(--ease) calc(var(--curtain-delay,0ms) + .5s) both}
+@keyframes rv-curtain-open{from{--rv-wipe:0%}to{--rv-wipe:100%}}
+@keyframes rv-curtain-slab{0%,50%{transform:scaleX(1)}to{transform:scaleX(0)}}
+@keyframes rv-curtain-zoom{from{scale:1.28}to{scale:1}}
+
+/* Each grapheme brightens in reading order as the heading travels up the viewport. */
+.rv-lit-char{opacity:clamp(.16,calc((var(--lit,1) * (var(--n) + 6) - var(--i)) / 6),1)}
+.rv-split-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;user-select:none}
+
+.rv-rule{position:absolute;left:0;right:0;bottom:-20px;height:1px;background:linear-gradient(90deg,var(--accent,#f5f5f3),#ffffff59 28%,var(--line,#ffffff20));transform:scaleX(0);transform-origin:left;transition:transform 1.3s cubic-bezier(.65,0,.35,1);pointer-events:none}
+.rv-rule.is-drawn{transform:scaleX(1)}
+@media(max-width:540px){.rv-rule{bottom:-14px}}
+
+/* Sideways travel only where the grid has two columns; on stacked phone layouts it widens the page and mobile browsers zoom out.
+   The section clips horizontally so narrow desktop gutters cannot overflow either. */
+@media(min-width:1101px){.rv-reveal.is-pending[data-rv-from=left]{translate:-56px 0}.rv-reveal.is-pending[data-rv-from=right]{translate:56px 0}}
+.why-grid{overflow-x:clip}
+
+.rv-motion-paused :is(.rv-curtain-pending,.rv-curtain-play){-webkit-mask-image:none;mask-image:none}
+.rv-motion-paused .rv-lit-char{opacity:1}
+.rv-motion-paused .rv-rule{transform:none}
+.rv-motion-paused .rv-reveal.is-pending[data-rv-from]{translate:none}
+@media(prefers-reduced-motion:reduce){.rv-curtain-pending{-webkit-mask-image:none;mask-image:none}.rv-lit-char{opacity:1}.rv-rule{transform:none}.rv-reveal.is-pending[data-rv-from]{translate:none}}
+@media print{.rv-fx,.rv-rule{display:none}.rv-curtain-pending{-webkit-mask-image:none;mask-image:none}.rv-lit-char{opacity:1}.rv-reveal.is-pending[data-rv-from]{translate:none}}

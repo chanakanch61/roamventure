@@ -1,0 +1,4 @@
+<div class="section-head"><h1><?= e($title) ?></h1><a class="outline-link" href="<?= base_url().'admin/package-levels' ?>">กลับรายการ</a></div>
+<?php if ($error): ?><div class="notice error" role="alert"><?= e($error) ?></div><?php endif ?>
+<?php if (!$level['id']) load_view('admin/package_level_import'); ?>
+<form method="post" action="<?= base_url().'admin/package-levels/'.($level['id'] ?: 'new') ?>" class="panel stack-form" id="package-level-form"><?= csrf_field() ?><label>ชื่อระดับบริการ<input name="name" required maxlength="100" value="<?= e($level['name']) ?>" placeholder="เช่น Comfort, Luxury, Exclusive"></label><label>ลำดับแสดงผล<input type="number" name="sort_order" required min="0" max="9999" value="<?= (int)$level['sort_order'] ?>"></label><button type="submit" class="btn">บันทึกระดับบริการ</button></form>

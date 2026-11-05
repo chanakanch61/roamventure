@@ -1,0 +1,1 @@
+<?php if ($pages>1): ?><nav class="gal-pagination" aria-label="หน้าอัลบั้ม"><?php for ($n=max(1,$page-2);$n<=min($pages,$page+2);$n++): ?><a <?= $n===$page ? 'aria-current="page"' : '' ?> href="<?= e(base_url().$base.'?'.http_build_query(array_merge($filters,['page'=>$n]))) ?>"><?= $n ?></a><?php endfor ?></nav><?php endif ?>

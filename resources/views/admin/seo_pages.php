@@ -1,0 +1,9 @@
+<link rel="stylesheet" href="<?= base_url().'public/seo-admin.css?v='.filemtime(base_path()."/".'public/seo-admin.css') ?>">
+<div class="section-head"><div><span class="eyebrow">PAGE META TAGS</span><h1><?= e($title) ?></h1><p>ชื่อหน้า คำอธิบาย และรูปแชร์ของหน้าเว็บที่ไม่มีฟอร์มแก้ไขของตัวเอง</p></div></div>
+<?php if (app(\App\Support\SiteGate::class)->enabled()): ?><p class="notice">เว็บไซต์ยังเปิดจำกัดการเข้าชมอยู่ Facebook, LINE และ Google จึงยังอ่าน Meta Tag ไม่ได้จนกว่าจะปิดการจำกัด</p><?php endif ?>
+<p class="notice">หน้าโปรแกรมทัวร์ โซน/ประเทศ/เส้นทาง และบทความ ตั้งค่า SEO ได้ในฟอร์มของแต่ละรายการ</p>
+<div class="panel table-scroll"><table class="seo-table"><thead><tr><th>รูปแชร์</th><th>หน้า</th><th>ชื่อที่แสดงผล</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody>
+<?php foreach (seo_pages() as $seoKey=>$seoPage): $seoMeta=seo_page_meta($settings,$seoKey); $seoCustom=trim(($settings['seo_'.$seoKey.'_title'] ?? '').($settings['seo_'.$seoKey.'_description'] ?? '').($settings['seo_'.$seoKey.'_keywords'] ?? ''))!==''; ?>
+<tr><td><img class="seo-thumb" src="<?= e($seoMeta['image']) ?>" alt="" loading="lazy"></td><td><strong><?= e($seoPage['label']) ?></strong><br><a class="text-link" href="<?= e(base_url().$seoPage['path']) ?>" target="_blank" rel="noopener">/<?= e($seoPage['path']) ?> ↗</a></td><td><?= e($seoMeta['title']) ?></td><td><span class="seo-state<?= $seoCustom ? ' is-set' : '' ?>"><?= $seoCustom ? 'กำหนดข้อความแล้ว' : 'ข้อความเริ่มต้น' ?></span> <span class="seo-state<?= !empty($seoMeta['image_size']) ? ' is-set' : '' ?>"><?= !empty($seoMeta['image_size']) ? 'รูปแชร์ '.\App\Support\ShareImage::WIDTH.' × '.\App\Support\ShareImage::HEIGHT : 'รูปเริ่มต้น' ?></span></td><td><a class="text-link" href="<?= base_url().'admin/seo/'.$seoKey ?>">แก้ไข</a></td></tr>
+<?php endforeach ?>
+</tbody></table></div>

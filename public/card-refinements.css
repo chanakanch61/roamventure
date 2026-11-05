@@ -1,0 +1,54 @@
+/* Consistent card rows and an explicit link to the program detail page. */
+.public-dark #featured .tour-grid{align-items:stretch}
+#featured .tour-card{display:flex;flex-direction:column;min-width:0}
+#featured .card-image{flex-shrink:0}
+#featured .card-body{display:flex;flex-direction:column;flex:1;min-width:0}
+#featured .card-body h3{min-height:3.2em}
+#featured .card-summary{min-height:3.4em}
+#featured .card-services{min-height:28px}
+#featured .card-bottom{margin-top:auto}
+.card-detail-link{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:50px;margin-top:18px;padding:13px 18px;border:1px solid #222;border-radius:8px;background:#222;color:#fff;font-size:14px;font-weight:600;transition:background .2s,box-shadow .2s}
+.public-dark .card-detail-link{background:#f5f5f3;border-color:#f5f5f3;color:#111}
+.card-detail-link:hover{background:#444;box-shadow:0 4px 16px #0002}
+.public-dark .card-detail-link:hover{background:#d9d9d5;border-color:#d9d9d5}
+.card-detail-link:focus-visible{outline:3px solid #999;outline-offset:4px}
+.tour-card:not(.tour-card-row) .card-bottom{gap:12px}
+.tour-card:not(.tour-card-row) .card-bottom>div{flex:1;min-width:0;overflow-wrap:anywhere}
+.tour-card:not(.tour-card-row) .card-bottom>.card-detail-link{width:auto;max-width:60%;margin-top:0;margin-left:auto;gap:6px;padding:10px 12px;font-size:12px}
+.tour-card:not(.tour-card-row) .card-bottom>.card-detail-link .material-icons{flex-shrink:0}
+@media(max-width:540px){#featured .card-body h3,#featured .card-summary{min-height:0}}
+
+/* All available periods stay visible, with one link per departure. */
+.tour-card .card-period-bubbles{border:0;border-radius:0;background:transparent;margin:4px 0 20px;overflow:visible}
+.tour-card .card-period-bubbles .card-periods-heading{background:transparent;padding:0 0 12px;color:var(--ink);font-size:12px;align-items:center}
+.card-period-bubbles .card-periods-heading>span:first-child{display:flex;align-items:center;gap:7px}
+.card-period-bubbles .card-periods-heading>span:last-child{font-size:10px;font-weight:500;color:var(--muted)}
+.card-period-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.tour-card .card-period-bubbles .card-period-row{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;min-width:0;min-height:66px;padding:10px 12px;border:1px solid #d8d8d8;border-radius:14px;background:#f7f7f7;color:#222;transition:background .2s,border-color .2s}
+.card-period-bubbles .card-period-date{font-size:11px;font-weight:600;line-height:1.6;overflow-wrap:anywhere}
+.card-period-availability{display:flex;align-items:center;gap:5px;font-size:10px;line-height:1.5;color:#666}
+body .card-period-availability .material-icons{font-size:15px}
+body .card-periods-heading .material-icons{font-size:18px}
+.tour-card .card-period-bubbles .card-period-row:hover{background:#eaeaea;border-color:#888}
+.tour-card .card-period-bubbles .card-period-row:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+.tour-card .card-period-bubbles .card-period-row.is-full{border-style:dashed;background:transparent;color:#777}
+.tour-card .card-period-bubbles .card-period-hint{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:10px;color:var(--muted)}
+.tour-card .card-period-bubbles .card-periods-empty{border:1px dashed var(--line);border-radius:12px;padding:14px 12px;color:var(--muted)}
+.public-dark .tour-card .card-period-bubbles .card-period-row{background:#202020;border-color:#3c3c3c;color:#eee}
+.public-dark .card-period-availability{color:#b8b8b8}
+.public-dark .tour-card .card-period-bubbles .card-period-row:hover{background:#303030;border-color:#aaa}
+.public-dark .tour-card .card-period-bubbles .card-period-row.is-full{background:#171717;color:#999;border-color:#444}
+.tour-card:not(.tour-card-row) .card-body>.fineprint{margin-top:12px}
+@media(max-width:360px){.card-period-chips{grid-template-columns:1fr}}
+
+/* Airline logos sit on a white plate: most are drawn for light backgrounds. */
+.airline-logo{display:inline-flex;align-items:center;justify-content:center;flex:none;box-sizing:content-box;width:84px;height:28px;padding:3px 6px;border-radius:7px;background:#fff;color:#121212}
+.airline-logo img{display:block;width:100%;height:100%;max-height:none;margin:0;border-radius:0;object-fit:contain}
+.airline-logo-large{width:108px;height:36px;padding:4px 7px;border-radius:8px}
+.airline-logo-text{font-size:12px;font-weight:700;line-height:1.2;text-align:center;overflow:hidden}
+.card-airline{display:flex;align-items:center;gap:10px;min-height:46px;margin:0 0 12px;padding:6px 10px;border:1px solid var(--line);border-radius:12px;font-size:13px;line-height:1.45}
+.card-airline.is-plain .material-icons{flex:none;font-size:18px}
+.card-airline-text{min-width:0;overflow-wrap:anywhere}
+.public-dark .card-airline{border-color:#333}
+.public-dark .card-airline-text{color:#ccc}
+.public-dark .card-airline.is-plain .material-icons,.public-dark .card-airline.is-plain .card-airline-text{color:#aaa}

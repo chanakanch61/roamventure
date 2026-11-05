@@ -1,0 +1,21 @@
+<link rel="stylesheet" href="<?= base_url().'public/destination-import.css?v='.filemtime(base_path()."/".'public/destination-import.css') ?>">
+<section class="panel narrow" id="destination-import">
+ <span class="eyebrow">TOPIC → PROMPT → JSON</span><h2>สร้าง <?= e($kinds[$kind]) ?> จากหัวข้อ</h2>
+ <ol><li>พิมพ์หัวข้อ<?= $kind!=='zone' ? 'และเลือกรายการแม่' : '' ?> แล้วกดสร้างและคัดลอก Prompt</li><li>นำ Prompt ไปให้ AI เขียนคำอธิบายสั้น บทความ On-page และ SEO ตามประเภท <?= e($kinds[$kind]) ?> แล้วนำ JSON กลับมาวางหรือเลือกไฟล์ .json</li><li>กดนำเข้า ตรวจบทความใน Visual / HTML อัปโหลดรูปปกและรูปในเนื้อหา แล้วบันทึกครั้งเดียว</li></ol>
+ <div class="stack-form"><label for="destination-topic">หัวข้อที่ต้องการสร้าง<input id="destination-topic" maxlength="100" required placeholder="<?= $kind==='zone' ? 'เช่น ยุโรป' : ($kind==='country' ? 'เช่น ญี่ปุ่น' : 'เช่น โตเกียว–ฟูจิ') ?>"></label>
+ <small>ใส่ชื่อจุดหมายหรือเส้นทางได้เลย เช่น “โตเกียว–ฟูจิ” ระบบจะใช้แกน “ทัวร์โตเกียว–ฟูจิ พร้อมช่างภาพร่วมทริป” สำหรับ Meta และ On-page ไม่ต้องเติมคำขายเอง</small>
+ <label for="destination-photographer-context">รายละเอียดบริการช่างภาพสำหรับเขียน Prompt (ไม่บังคับ)<textarea id="destination-photographer-context" rows="4" maxlength="3000" placeholder="ระบุเฉพาะข้อมูลจริง เช่น โปรแกรมไหนมีช่างภาพ รวมในราคาหรือจ่ายเพิ่ม ช่วงที่ให้บริการ จำนวนภาพ การแต่งภาพ วิธีและเวลาส่งภาพ หรือ URL ผลงานจริงของทีม"></textarea></label>
+ <small>ใช้เฉพาะตอนสร้าง Prompt ไม่บันทึกเป็นเงื่อนไขของโปรแกรมทัวร์ หากเว้นว่าง AI จะชวนตรวจบริการของแต่ละโปรแกรมก่อนจอง ไม่แต่งจำนวนภาพหรือรับรองว่าทุกทัวร์มีช่างภาพ</small>
+ <?php if ($kind!=='zone'): ?><label for="destination-prompt-parent"><?= $kind==='country' ? 'Zone / โซน' : 'Country / ประเทศ' ?><select id="destination-prompt-parent" required><option value="">เลือกรายการแม่</option><?php foreach ($parents as $parent): ?><option value="<?= (int)$parent['id'] ?>" <?= (int)$node['parent_id']===(int)$parent['id'] ? 'selected' : '' ?>><?= e($parent['name']) ?> · <?= e($parent['slug']) ?></option><?php endforeach ?></select></label><?php endif ?></div>
+ <p><?= $kind==='zone' ? 'Zone ไม่มีรายการแม่' : ($kind==='country' ? 'Country ต้องอยู่ภายใต้ Zone ที่มีในระบบ' : 'Route ต้องอยู่ภายใต้ Country ที่มีในระบบ') ?> · ไม่สร้างรายการแม่อัตโนมัติ</p>
+ <p>เริ่มจากหัวข้อได้เลย ไม่ต้องมี PDF · Prompt จะปรับโครงบทความตาม Zone / Country / Route และรายการแม่ที่เลือก พร้อมชื่อ URL คำอธิบายสั้น และ SEO ให้ตรวจทานก่อนบันทึก</p>
+ <p class="fineprint">Prompt เน้น SEO / AEO / GEO สำหรับทัวร์พร้อมช่างภาพร่วมทริป พร้อมบทสรุปคำตอบ หัวข้อ H2 / H3, FAQ เรื่องบริการและการรับภาพ รวมลิงก์ค้นหาภาพ Shutterstock สำหรับบรรยากาศจุดหมาย ส่วนภาพผลงานช่างภาพให้ใช้ภาพจริงของทีม แล้วอัปโหลดและตรวจ Alt text ในฟอร์ม</p>
+ <div class="actions"><button type="button" class="outline-link" id="copy-destination-prompt">สร้างและคัดลอก Prompt</button><span id="destination-prompt-status" role="status"></span></div>
+ <details><summary>ดู Prompt / คัดลอกด้วยตนเอง</summary><textarea id="destination-prompt" readonly rows="12" aria-label="Prompt สำหรับ AI" placeholder="พิมพ์หัวข้อแล้วกดสร้างและคัดลอก Prompt"></textarea></details>
+ <div class="stack-form"><label>วาง JSON<textarea id="destination-json" rows="7" spellcheck="false"></textarea></label><label>หรือเลือกไฟล์ JSON (ไม่เกิน 2 MB)<input type="file" id="destination-json-file" accept=".json,application/json"></label></div>
+ <p class="fineprint">นำเข้าทีละรายการ ข้อมูลจะเติมลงในฟอร์มให้แก้ไขก่อนบันทึก</p>
+ <button type="button" class="btn" id="import-destination-json">นำเข้า JSON ลงฟอร์ม</button>
+ <div id="destination-import-result" role="status" aria-live="polite" hidden></div>
+</section>
+<script type="application/json" id="destination-import-config"><?= json_encode(['kind'=>$kind,'label'=>$kinds[$kind],'brand'=>($settings['company_name'] ?? '') ?: 'RoamVenture','tours_url'=>base_url().'tours','parents'=>array_map(function($p){return ['id'=>(int)$p['id'],'name'=>$p['name'],'slug'=>$p['slug'],'url'=>destination_url($p)];},$parents),'existing_slugs'=>$existing_slugs],JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_UNICODE) ?></script>
+<script src="<?= base_url().'public/destination-import.js?v='.filemtime(base_path()."/".'public/destination-import.js') ?>" defer></script>

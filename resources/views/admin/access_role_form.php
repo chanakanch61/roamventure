@@ -1,0 +1,7 @@
+<div class="section-head"><div><span class="eyebrow">ROLES & PERMISSIONS</span><h1><?= e($title) ?></h1><p>สิทธิ์แต่ละรายการอนุญาตทั้งการดูและจัดการข้อมูลในส่วนนั้น</p></div><a class="text-link" href="<?= base_url().'admin/roles' ?>">← กลับรายการ</a></div>
+<?php foreach ($errors as $error): ?><div class="notice error" role="alert"><?= e($error) ?></div><?php endforeach ?>
+<form method="post" class="panel access-form"><?= csrf_field() ?><fieldset <?= $role['is_super'] ? 'disabled' : '' ?>>
+<label for="role-name">ชื่อบทบาท</label><input id="role-name" name="name" value="<?= e($role['name']) ?>" maxlength="100" required>
+<label for="role-description">คำอธิบาย</label><textarea id="role-description" name="description" maxlength="500" rows="3"><?= e($role['description']) ?></textarea>
+<h2>สิทธิ์การใช้งาน</h2><div class="access-permissions"><?php foreach ($catalog as $key=>$label): ?><label class="access-check"><input type="checkbox" name="permissions[]" value="<?= e($key) ?>" <?= in_array($key,$selected,true) || $role['is_super'] ? 'checked' : '' ?> <?= !app(\App\Repositories\AdminAccessRepository::class)->can($key) ? 'disabled' : '' ?>><span><?= e($label) ?><small><?= e($key) ?></small></span></label><?php endforeach ?></div>
+<p class="notice">มอบหมายได้เฉพาะสิทธิ์ที่คุณมี · ไม่เลือกสิทธิ์ใด บัญชีจะเข้าได้เฉพาะหน้าพื้นที่ทำงาน</p><input type="hidden" name="form_complete" value="1"><button class="btn" type="submit">บันทึกบทบาท</button></fieldset></form>

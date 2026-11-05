@@ -1,0 +1,351 @@
+/* RoamVenture — cinematic journeys in the original monochrome palette. Public pages only; loaded after components. */
+.travel-experience{--accent:#f5f5f3;--accent-deep:#eeeeee;--night:#0b0b0b;--surface:#151515;--surface-raised:#202020;--ink:#f5f5f3;--muted:#aaaaaa;--line:#ffffff20;--cream:#151515;--white:#151515;--green:#f5f5f3;--green-dark:#0b0b0b;--lime:#f5f5f3;--trip-border:#ffffff25;background:var(--night);color:var(--ink);color-scheme:dark}
+.travel-experience ::selection{background:#f5f5f3;color:#0b0b0b}
+.travel-experience :is(a,button,input,select,textarea,summary):focus-visible{outline:2px solid #eeeeee;outline-offset:4px}
+.travel-experience :is(p,.fineprint){color:var(--muted)}
+.travel-experience h2{font-weight:600;line-height:1.45}
+.travel-experience .container{width:min(1320px,calc(100% - 96px))}
+.travel-experience .eyebrow{color:var(--accent);font-size:10px;letter-spacing:2.6px}
+.travel-experience .green-dot{color:var(--accent)}
+.travel-experience .site-header,.travel-experience .site-header.is-scrolled,.travel-experience .site-header:has(.open){background:#0b0b0bf5;border-color:#ffffff1a;box-shadow:0 12px 35px #00000012}
+.travel-experience:has(#main>.hero) .site-header:not(.is-scrolled):not(:has(.open)){background:#0b0b0b70;backdrop-filter:blur(18px)}
+.travel-experience .nav-wrap{height:88px;gap:24px}
+.travel-experience .brand,.travel-experience .brand b{color:#ffffff}
+.travel-experience .brand-logo img{filter:brightness(0) invert(1)}
+.travel-experience .nav-wrap nav{gap:26px}
+.travel-experience .nav-wrap nav a{font-size:13px;font-weight:500;color:#e4e4e4;white-space:nowrap}
+.travel-experience .nav-wrap nav a:is(:hover,.active){color:var(--accent)}
+.travel-experience .nav-wrap nav a:after{background:var(--accent)}
+.travel-experience .nav-wrap nav .travel-nav-cta{background:var(--accent);color:#121212;border-radius:100px;padding:12px 22px;font-weight:700}
+.travel-experience .nav-wrap nav .travel-nav-cta:after{display:none}
+.travel-experience .menu-toggle{color:white}
+.travel-experience .btn{background:var(--accent);border-color:var(--accent);color:#121212;border-radius:100px;font-size:13px;font-weight:700;padding:16px 26px;box-shadow:0 7px 25px #8585851a;transition:background .25s,transform .25s,box-shadow .25s}
+.travel-experience .btn:hover{background:#cccccc;border-color:#cccccc;box-shadow:0 10px 32px #eeeeee30;transform:translateY(-3px)}
+.travel-experience .outline-link{border-color:#eeeeee66;background:transparent;color:#e8e8e8;border-radius:100px;padding:13px 24px}
+.travel-experience .outline-link:hover{background:var(--accent);color:#0b0b0b;border-color:var(--accent)}
+.travel-experience .text-link{color:var(--accent)}
+/* The title, landscape and translucent story form one cinematic composition. */
+.public-dark.travel-experience #main>.home-slider{background:var(--night);border:0;height:auto;overflow:clip;padding-bottom:0}
+.public-dark.travel-experience .hero.home-slider .home-slide{min-height:920px;padding-bottom:0}
+.public-dark.travel-experience .home-slide .hero-picture img{object-position:center 48%;filter:none}
+.public-dark.travel-experience .hero.type-hero .hero-shade{background:linear-gradient(180deg,#0e0e0e55 0%,#0b0b0b10 32%,#0b0b0b4d 58%,#0b0b0b 100%),linear-gradient(90deg,#0b0b0b60,transparent 60%)}
+.public-dark.travel-experience #main>.home-slider .hero-content{width:min(1440px,calc(100% - 96px));padding-top:126px;padding-bottom:30px;min-height:920px}
+.travel-experience .hero-caption{display:flex;align-items:center;justify-content:space-between;gap:20px;font-size:9px;letter-spacing:2px;color:#eeeeee;margin-bottom:32px}
+.travel-experience .hero-caption>span{display:flex;align-items:center;gap:10px}
+.travel-experience .hero-caption .material-icons{font-size:18px;color:var(--accent)}
+.travel-experience .live-dot{background:var(--accent);box-shadow:0 0 0 5px #f5f5f321}
+.travel-experience .adventure-heading{text-align:center;position:relative;z-index:1}
+.travel-experience .adventure-kicker{font-size:clamp(13px,1.5vw,20px);color:#eeeeee;letter-spacing:2px;display:block;margin-bottom:20px;text-shadow:0 2px 15px #00000077}
+.travel-experience .hero-display{font-family:Impact,'Arial Narrow','Plus Jakarta Sans',sans-serif;font-size:clamp(100px,16.8vw,260px);line-height:.95;letter-spacing:-.025em;font-weight:400;margin:0 auto;max-width:100%;color:#f9f9f9;text-shadow:0 8px 45px #11111124}
+.travel-experience .hero-display>span{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;letter-spacing:9px;font-weight:600;color:#f1f1f1;-webkit-text-stroke:0;margin-top:20px}
+.travel-experience .adventure-story{position:relative;z-index:3;width:480px;margin-top:48px;padding:28px 30px 30px;background:linear-gradient(125deg,#efefef1f,#eeeeee09);border:1px solid #efefef40;border-radius:22px;backdrop-filter:blur(20px);box-shadow:0 20px 60px #0a0a0a30}
+.travel-experience .adventure-label{font-size:9px;letter-spacing:2px;color:#eeeeee;display:flex;align-items:center;gap:9px}
+.travel-experience .adventure-label .material-icons{font-size:19px}
+.public-dark.travel-experience .hero.home-slider .slide-title{font-size:clamp(24px,2.35vw,34px);font-weight:600;line-height:1.5;letter-spacing:-.6px;max-width:100%;margin:16px 0 12px}
+.travel-experience .adventure-story>p{font-size:12px;line-height:1.9;color:#e0e0e0;max-width:380px}
+.public-dark.travel-experience .hero-actions{gap:18px;margin-top:24px;flex-wrap:wrap}
+.public-dark.travel-experience .hero-actions .btn{padding:14px 20px;gap:18px}
+.public-dark.travel-experience .hero-text-link{font-size:11px;color:white}
+.travel-experience .adventure-postcards{position:absolute;right:3.5%;top:480px;width:530px;height:320px;z-index:2}
+.travel-experience .adventure-postcard{position:absolute;overflow:hidden;width:225px;height:280px;border:6px solid #f2f2f2;border-bottom-width:34px;border-radius:5px;box-shadow:0 18px 50px #0a0a0a80;background:#f2f2f2;transition:transform .6s}
+.travel-experience .adventure-postcard img{width:100%;height:100%;object-fit:cover}
+.travel-experience .adventure-postcard>span{position:absolute;bottom:-25px;left:7px;font-size:8px;letter-spacing:1.2px;color:#222222;font-weight:700}
+.travel-experience .postcard-mountain{left:30px;top:0;transform:rotate(-12deg)}
+.travel-experience .postcard-ocean{right:20px;top:24px;transform:rotate(10deg)}
+.travel-experience .adventure-compass{position:absolute;left:230px;top:205px;z-index:3;width:85px;height:85px;background:var(--accent);color:var(--night);display:grid;place-items:center;border-radius:50%;border:6px solid #121212;transform:rotate(15deg)}
+.travel-experience .adventure-compass .material-icons{font-size:48px}
+.travel-experience .hero-orbit{top:450px;right:3%;width:86px;height:86px;background:#16161675;border-color:#eeeeee88;backdrop-filter:blur(8px);z-index:4}
+.travel-experience .hero-orbit span{font-size:7px;letter-spacing:1.4px}
+.travel-experience .hero-orbit b .material-icons{font-size:29px;color:var(--accent)}
+.travel-experience .hero-orbit:hover{background:#222222;color:#ffffff}
+.travel-experience .hero-bottom-note{margin-top:36px;padding-top:22px;position:relative;font-size:8px;letter-spacing:1.5px;color:#eeeeee;border-color:#dbdbdb33}
+.travel-experience .hero-bottom-note a{color:#e9e9e9;font-size:11px}
+.public-dark.travel-experience .hero.home-slider .slider-controls [data-prev],.public-dark.travel-experience .hero.home-slider .slider-controls [data-next]{bottom:17px;background:#1d1d1d;border-color:#656565;z-index:5}
+.public-dark.travel-experience .hero.home-slider .slider-dots{bottom:15px;z-index:5}
+.public-dark.travel-experience .hero.home-slider .slider-dots button[aria-current=true]:after{background:var(--accent)}
+/* Search stays close to the landscape, with full-width controls on touch. */
+.public-dark.travel-experience .search-container{margin-top:0;padding-block:0 18px;z-index:6}
+.public-dark.travel-experience .search-form{background:linear-gradient(125deg,#232323,#181818);border:1px solid #8989894d;border-radius:22px;padding:24px;box-shadow:0 22px 65px #00000033;gap:16px}
+.public-dark.travel-experience .search-types{padding-bottom:12px;gap:8px}
+.public-dark.travel-experience .search-type{border:1px solid #87878750;color:#cccccc;font-size:12px;padding:10px 22px;background:transparent}
+.public-dark.travel-experience .search-type[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#121212}
+.public-dark.travel-experience .search-type:hover:not([aria-pressed=true]){background:#454545;color:white}
+.public-dark.travel-experience .search-form .search-field{background:#111111;border:1px solid #86868645;border-radius:12px;padding:13px 17px}
+.public-dark.travel-experience .search-form .search-field:focus-within{border-color:var(--accent);background:#1a1a1a}
+.public-dark.travel-experience .search-form :is(input,select){color:#e0e0e0;background:transparent;color-scheme:dark}
+.public-dark.travel-experience .search-form :is(input::placeholder){color:#a8a8a8}
+.public-dark.travel-experience .search-form option{background:#1a1a1a;color:#ffffff}
+.public-dark.travel-experience .search-form .search-label{color:#f1f1f1;font-size:12px}
+.public-dark.travel-experience .search-icon{color:var(--accent)}
+.public-dark.travel-experience .search-form>.btn{border-radius:12px;align-self:stretch}
+.public-dark.travel-experience .date-range-dialog{background:#191919;border:1px solid #737373;color:#f1f1f1}
+.public-dark.travel-experience .date-range-day.in-range{background:#494949;color:#f7f7f7}
+.public-dark.travel-experience .date-range-day:is(.range-start,.range-end),.public-dark.travel-experience .date-range-apply{background:var(--accent);color:#0b0b0b;border-color:var(--accent)}
+.public-dark.travel-experience .date-range-apply:disabled{background:#414141;color:#a6a6a6;border-color:#5c5c5c}
+.public-dark.travel-experience .date-range-day:disabled{color:#838383}
+/* Shared cards, destinations and the home editorial sections. */
+.public-dark.travel-experience .benefit-strip{padding-block:30px 36px;border-color:#272727}
+.public-dark.travel-experience .benefit-strip>div>span{color:var(--accent);background:#f5f5f311;border:1px solid #f5f5f333;border-radius:16px}
+.public-dark.travel-experience .benefit-strip b{color:#f3f3f3;font-size:13px;font-weight:500}
+.public-dark.travel-experience .benefit-strip small{color:#b4b4b4}
+.public-dark.travel-experience .section{padding-block:100px}
+.public-dark.travel-experience .section-head{margin-bottom:38px}
+.public-dark.travel-experience .section-head h2{font-size:clamp(28px,3.1vw,45px);font-weight:600}
+.public-dark.travel-experience .section-head .eyebrow:before{content:'✦';color:var(--accent);margin-right:10px}
+.public-dark.travel-experience .section-head p{color:#aaaaaa}
+.public-dark.travel-experience .tour-grid{gap:25px}
+.public-dark.travel-experience .tour-card{background:linear-gradient(145deg,#1c1c1c,#161616);border:1px solid #ffffff1c;border-radius:20px}
+.public-dark.travel-experience .tour-card:hover{border-color:#f5f5f377;box-shadow:0 22px 55px #00000044;transform:translateY(-7px)}
+.public-dark.travel-experience .card-image{height:280px}
+.public-dark.travel-experience .card-badge{background:#121212bf;border-color:#ffffff50;color:white;font-size:10px}
+.public-dark.travel-experience .image-arrow{background:var(--accent);color:#121212}
+.public-dark.travel-experience .card-body{padding:23px}
+.public-dark.travel-experience .card-body h3{font-size:20px;font-weight:600;color:#f4f4f4}
+.public-dark.travel-experience :is(.card-meta,.card-meta>span:first-child,.card-route,.card-summary,.row-highlights li,.row-tour-note){color:#b8b8b8}
+.public-dark.travel-experience .card-services span{background:#232323;border-color:#4e4e4e;color:#d0d0d0}
+.public-dark.travel-experience .card-bottom{border-color:#4a4a4a}
+.public-dark.travel-experience .card-bottom strong{color:#eeeeee;font-size:30px}
+.public-dark.travel-experience .card-bottom small{color:#aaaaaa}
+.public-dark.travel-experience .round-link{color:var(--accent);border-color:#797979}
+.public-dark.travel-experience .tour-card:hover .round-link{background:var(--accent);color:#121212}
+.public-dark.travel-experience :is(.card-departure-toggle,.card-periods,.card-period-row,.card-periods-more){border-color:#4a4a4a}
+.public-dark.travel-experience .card-departure-toggle>summary{color:#dddddd}
+.public-dark.travel-experience :is(.card-periods-heading,.card-periods-more summary){color:#e3e3e3}
+.public-dark.travel-experience .card-period-row{color:#efefef}
+.public-dark.travel-experience .card-period-row:hover{background:#434343}
+.public-dark.travel-experience .seat-badge{background:#2a2a2a;color:#eeeeee;border-color:#6a6a6a}
+.public-dark.travel-experience .seat-badge.sold-out{background:#242424;color:#c1c1c1;border-color:#6d6d6d}
+.public-dark.travel-experience .rv-manifesto{background:#161616;border-color:#f5f5f333;padding:30px 0}
+.public-dark.travel-experience .rv-marquee{font-family:Impact,'Arial Narrow',sans-serif;font-size:clamp(50px,7vw,110px);letter-spacing:1px;-webkit-text-stroke:1px #7d7d7d;font-weight:400}
+.public-dark.travel-experience .rv-marquee i{color:var(--accent)}
+.public-dark.travel-experience .destination-section{background:radial-gradient(ellipse at 80% 30%,#414141 0,transparent 60%),#131313;border-color:#4a4a4a}
+.public-dark.travel-experience .destination-card{border-radius:140px 140px 20px 20px;border-color:#7c7c7c;height:410px}
+.public-dark.travel-experience .destination-card:nth-child(even){margin-top:45px}
+.public-dark.travel-experience .destination-card:hover{border-color:var(--accent);border-radius:24px}
+.public-dark.travel-experience .destination-card b{background:var(--accent);color:#0b0b0b;border-color:var(--accent)}
+.public-dark.travel-experience .decor-star{color:var(--accent)}
+.public-dark.travel-experience .why-grid{gap:80px}
+.public-dark.travel-experience .why-image>img{border-radius:180px 180px 24px 24px;height:610px}
+.public-dark.travel-experience .photo-note{background:#222222e8;color:#ffffff;border:1px solid #eeeeee80;border-radius:18px;box-shadow:0 20px 50px #00000033}
+.public-dark.travel-experience .photo-note span{color:var(--accent)}
+.public-dark.travel-experience .why-copy h2{font-size:clamp(32px,3.4vw,50px);font-weight:600}
+.public-dark.travel-experience .why-item{border-color:#4a4a4a}
+.public-dark.travel-experience .why-item>span{color:var(--accent)}
+.public-dark.travel-experience .why-item h3{color:#f1f1f1}
+.public-dark.travel-experience .why-item p{color:#b5b5b5}
+.public-dark.travel-experience .steps-section{background:linear-gradient(110deg,#1d1d1d,#151515);border-color:#4a4a4a;padding-block:85px}
+.public-dark.travel-experience .steps-section .eyebrow{color:#eeeeee}
+.public-dark.travel-experience .steps-grid{gap:30px}
+.public-dark.travel-experience .steps-grid>div{border-color:#606060}
+.public-dark.travel-experience .steps-grid>div>span{color:transparent;-webkit-text-stroke:1px #eeeeee;font-size:80px}
+.public-dark.travel-experience .steps-grid p{color:#c1c1c1}
+.public-dark.travel-experience .faq-list details{border-color:#4a4a4a}
+.public-dark.travel-experience .faq-list details[open]{border-color:#f5f5f388}
+.public-dark.travel-experience .faq-list summary{color:#eeeeee}
+.public-dark.travel-experience .faq-list summary:after{color:var(--accent)}
+.public-dark.travel-experience .cta-banner{background:linear-gradient(110deg,#444444e6,#171717ad),var(--story-image) center/cover;border:1px solid #7f7f7f7a;border-radius:28px;padding:60px;overflow:hidden}
+.public-dark.travel-experience .cta-banner h2{color:white;font-weight:600}
+.public-dark.travel-experience .cta-banner p{color:#d1d1d1}
+.public-dark.travel-experience .cta-banner .eyebrow{color:#eeeeee}
+.public-dark.travel-experience .cta-star{color:#eeeeee33}
+/* Listing and itinerary pages keep their established interaction contracts. */
+.public-dark.travel-experience .hero.type-hero:not(.home-slider){min-height:440px;background:#232323}
+.public-dark.travel-experience .hero.type-hero:not(.home-slider) .hero-content{padding-top:145px;padding-bottom:75px}
+.public-dark.travel-experience .hero.type-hero:not(.home-slider) h1{font-size:clamp(36px,5vw,72px);font-weight:600;max-width:900px}
+.public-dark.travel-experience .hero.type-hero:not(.home-slider) .eyebrow{color:#eeeeee}
+.public-dark.travel-experience .listing-search{z-index:8}
+.public-dark.travel-experience .tour-list{gap:26px}
+.public-dark.travel-experience .row-tour{background:#191919;border-color:#4a4a4a;border-radius:20px}
+.public-dark.travel-experience .row-tour-booking{background:#141414;border-color:#4a4a4a}
+.public-dark.travel-experience .row-tour-booking .card-periods{background:#171717}
+.public-dark.travel-experience .row-tour-price>strong{color:#eeeeee}
+.public-dark.travel-experience .row-tour-price>span{color:#aaaaaa}
+.public-dark.travel-experience .row-tour-note{border-color:#4a4a4a}
+.public-dark.travel-experience .empty{background:#191919;border-color:#4a4a4a;border-radius:20px;color:#e9e9e9}
+.public-dark.travel-experience .trip-detail{background:linear-gradient(180deg,#1d1d1d,var(--night) 950px);--trip-border:#4a4a4a}
+.public-dark.travel-experience :is(.trip-nav,.trip-booking,.booking-panel,.detail-panel,.trip-section){border-color:#4a4a4a}
+.public-dark.travel-experience .trip-nav{background:#141414f5}
+.public-dark.travel-experience .trip-nav a:is(:hover,.active){color:var(--accent);border-color:var(--accent)}
+.public-dark.travel-experience .trip-gallery{border-radius:24px}
+.public-dark.travel-experience .trip-at-glance{border-color:#4a4a4a}
+.public-dark.travel-experience .trip-at-glance strong{color:#eeeeee}
+.public-dark.travel-experience .trip-mobile-action{background:#191919f5;border-color:#4a4a4a}
+/* About and contact: the same monochrome atmosphere with clear, readable panels. */
+.travel-experience .rv-company{--rv-soft:#b6b6b6}
+.travel-experience .rv-company :is(.rv-kicker,.rv-link,.rv-step-number,.rv-channel-icon){color:#eeeeee}
+.travel-experience .rv-company h2 em{color:#eeeeee}
+.travel-experience .rv-hero-shade{background:linear-gradient(90deg,#131313c7,#13131335),linear-gradient(0deg,#0b0b0b,transparent 75%)}
+.travel-experience .rv-company .rv-display>span{-webkit-text-stroke-color:#eeeeee}
+.travel-experience .rv-section-nav{background:#161616f5;border-color:#4a4a4a}
+.travel-experience .rv-section-nav a.active{color:var(--accent);border-color:var(--accent)}
+.travel-experience .rv-company :is(.rv-channel,.rv-planner-panel,.rv-planner-note,.rv-message-preview,.rv-info-panel){background:#1c1c1c;border-color:#595959;border-radius:20px}
+.travel-experience .rv-channel-action{color:#eeeeee;border-color:#595959}
+.travel-experience .rv-channel-action>span{background:#494949;color:#eeeeee}
+.travel-experience .rv-company :is(.rv-copy,.rv-secondary){color:#dddddd;border-color:#6a6a6a;background:#1f1f1f}
+.travel-experience .rv-company :is(.rv-field input,.rv-field textarea,.rv-field select){background:#121212;border-color:#626262;color:#f1f1f1;border-radius:10px}
+.travel-experience .rv-topic-options input:checked+span{background:#f5f5f3;color:#121212;border-color:#f5f5f3}
+.travel-experience .rv-company :is(.rv-faq-section,.rv-styles){background:#161616}
+.travel-experience .rv-company :is(.rv-faq-list details,.rv-steps article,.rv-story-meta,.rv-hero-foot){border-color:#4a4a4a}
+.travel-experience .rv-company :is(.rv-final-cta,.rv-contact-bottom){background:radial-gradient(ellipse at right,#4a4a4a,transparent),#191919;border-color:#4a4a4a;border-radius:24px}
+.travel-experience .rv-company .rv-final-cta .rv-kicker{color:#eeeeee}
+/* Journal, story and gallery surfaces use the common palette. */
+.travel-experience .rv-journal,.travel-experience .gal-experience{background:var(--night);--gal-bg:#0b0b0b;--gal-ink:#f5f5f5;--gal-muted:#b7b7b7}
+.travel-experience .journal-masthead h1 em{color:#eeeeee}
+.travel-experience :is(.journal-kicker,.journal-intro p,.journal-categories a,.journal-search input){color:#c6c6c6}
+.travel-experience .journal-categories a.active{background:var(--accent);color:#131313;border-color:var(--accent)}
+.travel-experience :is(.journal-search,.journal-filter-bar,.journal-masthead,.journal-stories,.home-journal){border-color:#4a4a4a}
+.travel-experience .home-journal{background:#131313}
+.travel-experience :is(.home-journal .eyebrow,.home-journal .journal-all,.home-journal .hj-meta){color:#eeeeee}
+.travel-experience :is(.blog-card,.journal-card,.hj-card){border-color:#4a4a4a}
+.travel-experience :is(.journal-card img,.hj-image,.blog-cover){border-radius:18px}
+.travel-experience :is(.gal-ribbon,.gal-quote,.gal-collection){background:#171717;border-color:#4a4a4a}
+.travel-experience :is(.gal-overline,.gal-total,.gal-heading-star,.gal-narrative-star,.gal-album-end h2 em){color:#eeeeee}
+.travel-experience .gal-collection-heading h2 em,.travel-experience .gal-quote p em{color:#eeeeee}
+.travel-experience .gal-story-grid .gal-card .gal-card-meta,.travel-experience .gal-album-wall figcaption{color:#eeeeee}
+.travel-experience .gal-experience .gal-filters :is(input,select){background:#191919;border-color:#626262;color:#f1f1f1}
+.travel-experience .gal-experience .gal-filters select option{background:#191919;color:#f1f1f1}
+.travel-experience .gal-ribbon i{color:var(--accent)}
+.travel-experience .gal-lightbox{background:#0f0f0f}
+.travel-experience .gal-lightbox .gal-lightbox-thumbs button[aria-current=true]{border-color:var(--accent)}
+/* Quiet, oversized brand sign-off across the public website. */
+.travel-experience footer{background:radial-gradient(ellipse at 50% 0,#202020,transparent 65%),#0c0c0c;border-top:1px solid #4a4a4a;margin-top:80px}
+.travel-experience .footer-wordmark{color:#212121;border-color:#4a4a4a;font-family:Impact,'Arial Narrow',sans-serif;letter-spacing:0;font-weight:400;justify-content:center;gap:12px;font-size:clamp(32px,6vw,88px);line-height:.9;margin-bottom:24px}
+.travel-experience .footer-wordmark span{color:transparent;-webkit-text-stroke:1px #676767}
+.travel-experience .footer-wordmark .material-icons{color:var(--accent)}
+.travel-experience .footer-grid h3{color:#e9e9e9}
+.travel-experience .footer-grid :is(p,a){color:#b3b3b3}
+.travel-experience .footer-grid a:hover{color:#eeeeee}
+.travel-experience .footer-bottom{border-color:#4a4a4a;color:#a7a7a7}
+.travel-experience .scroll-progress{background:var(--accent);height:2px}
+.travel-back-top{position:fixed;right:24px;bottom:24px;z-index:19;display:grid;place-items:center;width:46px;height:46px;background:#222222e8;backdrop-filter:blur(12px);border:1px solid #8b8b8b;color:#eeeeee;border-radius:50%;box-shadow:0 8px 24px #00000044}
+.travel-back-top[hidden]{display:none}
+.travel-back-top:hover{background:var(--accent);color:#0b0b0b}
+.travel-back-top:not([hidden]){animation:travel-back-in .55s var(--ease) both}
+@keyframes travel-back-in{from{opacity:0;translate:0 16px;scale:.8}}
+.travel-back-ring{position:absolute;inset:-6px;width:calc(100% + 12px);height:calc(100% + 12px);rotate:-90deg;pointer-events:none}
+.travel-back-ring circle{fill:none;stroke-width:1.5}
+.travel-back-ring .track{stroke:#ffffff1c}
+.travel-back-ring .bar{stroke:var(--accent);stroke-dasharray:1;stroke-dashoffset:1;stroke-linecap:round}
+/* High-specificity component finishes override the earlier monochrome states. */
+.public-dark.travel-experience .tour-card .card-period-bubbles .card-period-row{background:#222222;border-color:#606060;color:#f3f3f3}
+.public-dark.travel-experience .tour-card .card-period-bubbles .card-period-row:hover{background:#4d4d4d;border-color:#eeeeee}
+.public-dark.travel-experience .tour-card .card-period-bubbles .card-period-row.is-full{background:#1b1b1b;color:#a3a3a3;border-color:#4e4e4e}
+.public-dark.travel-experience .card-period-availability{color:#c9c9c9}
+.public-dark.travel-experience .card-detail-link{background:#f5f5f3;border-color:#f5f5f3;color:#121212;border-radius:12px}
+.public-dark.travel-experience .card-detail-link:hover{background:#cccccc;border-color:#cccccc}
+.public-dark.travel-experience .trip-detail :is(.booking-panel,.service-box,.itinerary details,.trip-accordion details){background:#1a1a1a;border-color:#595959;border-radius:18px}
+.public-dark.travel-experience .trip-detail :is(.highlight-box,.day-label){background:#262626;color:#ececec}
+.public-dark.travel-experience .trip-detail :is(.itinerary,.trip-accordion) details[open]{border-color:#eeeeee}
+.public-dark.travel-experience .trip-detail .btn,.public-dark.travel-experience .trip-mobile-action .btn{background:#f5f5f3;color:#121212;border-color:#f5f5f3}
+.public-dark.travel-experience .trip-detail .btn:hover{background:#cccccc;border-color:#cccccc}
+.public-dark.travel-experience .trip-nav a[aria-current]{color:#eeeeee;border-color:#f5f5f3}
+.public-dark.travel-experience :is(input,select,textarea){color-scheme:dark;color:#f1f1f1;background:#141414;border-color:#626262;accent-color:#f5f5f3}
+.public-dark.travel-experience :is(input,select,textarea):focus{outline-color:#eeeeee}
+.public-dark.travel-experience :is(.seat-summary,.booking-total,.quantity-control,.room-picker,.room-row,.package-snapshot){background:#222222;border-color:#5e5e5e;color:#e2e2e2}
+.public-dark.travel-experience .quantity-control button{background:#4c4c4c;color:#f1f1f1;border-color:#787878}
+.public-dark.travel-experience .quantity-control input{background:transparent;color:#ffffff}
+.public-dark.travel-experience .booking-total .grand-total{border-color:#787878}
+.public-dark.travel-experience .booking-total strong,.public-dark.travel-experience .seat-summary strong{color:#eeeeee}
+.public-dark.travel-experience .departure-table th{background:#222222;color:#dfdfdf}
+.public-dark.travel-experience .departure-table td{border-color:#4a4a4a}
+.public-dark.travel-experience .trip-detail .departure-table tr.is-selected{background:#434343;outline-color:#f5f5f3}
+.public-dark.travel-experience .trip-departure-button{background:#292929;color:#eeeeee;border-color:#7f7f7f}
+.travel-experience .rv-company .rv-field :is(input,textarea){background:#141414!important;color:#f1f1f1!important;border-color:#626262}
+.travel-experience .rv-company :is(.rv-hours,.rv-office,.rv-team-block){background:#1c1c1c;border-color:#595959}
+.travel-experience .rv-company .rv-google-map{background:#141414}
+.travel-experience .rv-art-stamp{background:#171717;border-color:#7e7e7e;color:#e3e3e3}
+.travel-experience .rv-journal{--journal-bg:#0b0b0b;--journal-ink:#f7f7f7;--journal-muted:#bababa;--journal-line:#4a4a4a}
+.travel-experience .journal-masthead h1 em{color:transparent;-webkit-text-stroke-color:#eeeeee}
+.travel-experience .home-journal-photo{border-radius:18px;background:#1e1e1e}
+.travel-experience .home-journal-card{border-color:#4a4a4a}
+.travel-experience :is(.home-journal-read,.home-journal-meta,.home-journal-heading h2>span){color:#eeeeee}
+.travel-experience .home-journal-arrow{background:#f5f5f3;color:#121212}
+.travel-experience .gal-deck-photo{border-radius:22px;background:#1e1e1e}
+.travel-experience .gal-deck-heading .gal-overline,.travel-experience .gal-deck-counter strong{color:#eeeeee}
+.travel-experience :is(.gal-deck-hint,.gal-deck-drag,.gal-deck-counter>span){color:#bebebe}
+.travel-experience .gal-deck-controls>button{background:#1c1c1c;border-color:#747474;color:#eeeeee}
+.travel-experience .gal-deck-thumbs button[aria-current=true]{border-color:#f5f5f3}
+.travel-experience .gal-deck-progress>span{background:#f5f5f3}
+.travel-experience .gal-deck-shade{background:linear-gradient(0deg,#121212d9,transparent 60%)}
+.travel-experience .nav-wrap nav .travel-nav-cta.active{color:#121212}
+.travel-experience .site-access-bar{background:#181818;color:#cdcdcd;border-bottom:1px solid #575757}
+/* Customer booking pages and the private preview entrance share the palette. */
+.travel-experience .billing-page :is(.panel,.payment-choice,.passport-card){background:#1c1c1c;color:#f1f1f1;border:1px solid #595959;border-radius:18px}
+.travel-experience .billing-page :is(.booking-total,.payment-bank,.package-snapshot){background:#222222;color:#ebebeb;border-color:#5e5e5e}
+.travel-experience .billing-page :is(input,select,textarea){background:#141414;border-color:#626262;color:#f6f6f6;accent-color:#f5f5f3}
+.travel-experience .billing-page :is(.document-link,.booking-timeline,.payment-history,.payment-review,.grand-total){border-color:#5e5e5e;color:#d2d2d2}
+.travel-experience .billing-page .booking-total strong{color:#eeeeee}
+.travel-experience .billing-page .booking-timeline li:before{background:#f5f5f3}
+.travel-experience .billing-page .booking-timeline small{color:#b8b8b8}
+.travel-experience.travel-access{background:linear-gradient(125deg,#080808ce,#08080855),url('images/hero.jpg') center/cover fixed;color:#f6f6f6;padding:40px 20px}
+.travel-access .site-access-card{background:#191919d9;border:1px solid #eeeeee54;backdrop-filter:blur(24px);box-shadow:0 30px 100px #09090970;border-radius:26px}
+.travel-access .site-access-brand,.travel-access .site-access-brand span{color:#ffffff}
+.travel-access .site-access-brand>span:last-child,.travel-access .site-access-eyebrow{color:#eeeeee}
+.travel-access .site-access-lock{background:#f5f5f31a;color:#eeeeee;border-color:#f5f5f344}
+.travel-access .site-access-card :is(p,label){color:#cccccc}
+.travel-access .site-access-card input{background:#141414;color:#f6f6f6;border-color:#6d6d6d;border-radius:10px}
+.travel-access .site-access-card input:focus{outline:2px solid #eeeeee;outline-offset:2px}
+.travel-access .site-access-card button{background:#f5f5f3;border-color:#f5f5f3;color:#121212;border-radius:100px;min-height:50px}
+.travel-access .site-access-card button:hover{background:#cccccc}
+.travel-access .site-access-admin,.travel-access .site-access-copyright{color:#cccccc}
+@media(min-width:1600px){.public-dark.travel-experience #main>.home-slider .hero-content{padding-top:138px}.travel-experience .adventure-postcards{top:510px;right:6%}.travel-experience .adventure-story{margin-top:55px}}
+@media(max-width:1199px){
+ .travel-experience .container{width:calc(100% - 64px)}
+ .travel-experience .nav-wrap nav{gap:16px}.travel-experience .nav-wrap nav a{font-size:12px}.travel-experience .nav-wrap nav .travel-nav-cta{padding:10px 15px}
+ .travel-experience .brand{font-size:27px}
+ .public-dark.travel-experience #main>.home-slider .hero-content{width:calc(100% - 64px)}
+ .travel-experience .adventure-postcards{width:430px;right:0;top:465px}.travel-experience .adventure-postcard{width:190px;height:250px}.travel-experience .postcard-mountain{left:25px}.travel-experience .postcard-ocean{right:0}.travel-experience .adventure-compass{left:185px;top:195px}
+ .travel-experience .adventure-story{width:430px}.travel-experience .hero-orbit{top:380px}
+ .public-dark.travel-experience .why-grid{gap:45px}
+}
+@media(max-width:1000px){
+ .travel-experience .nav-wrap{height:76px}.travel-experience .menu-toggle{display:block;width:44px;height:44px}
+ .travel-experience .nav-wrap nav{display:none}.travel-experience .nav-wrap nav.open{display:flex;position:absolute;top:100%;left:20px;right:20px;flex-direction:column;align-items:stretch;gap:0;background:#191919f5;backdrop-filter:blur(20px);padding:15px;border:1px solid #6b6b6b;border-radius:18px;box-shadow:0 20px 50px #00000055;max-height:calc(100dvh - 130px);overflow-y:auto}
+ .travel-experience .nav-wrap nav a{padding:13px 16px;font-size:14px}.travel-experience .nav-wrap nav a:after{display:none}.travel-experience .nav-wrap nav .travel-nav-cta{margin-top:8px;text-align:center;padding:13px}
+ .public-dark.travel-experience .hero.home-slider .home-slide,.public-dark.travel-experience #main>.home-slider .hero-content{min-height:850px}
+ .public-dark.travel-experience #main>.home-slider .hero-content{padding-top:115px}
+ .travel-experience .adventure-story{width:390px;margin-top:45px;padding:24px}
+ .travel-experience .adventure-postcards{width:300px;top:450px}.travel-experience .adventure-postcard{width:155px;height:215px}.travel-experience .postcard-mountain{left:0}.travel-experience .postcard-ocean{right:0;top:85px}.travel-experience .adventure-compass{left:105px;top:215px;width:64px;height:64px}.travel-experience .adventure-compass .material-icons{font-size:36px}
+ .travel-experience .hero-orbit{top:335px;right:4%}.travel-experience .hero-bottom-note{margin-top:45px}.travel-experience .hero-bottom-note>span{max-width:50%;line-height:1.9}
+ .public-dark.travel-experience .section{padding-block:75px}.public-dark.travel-experience .tour-grid{gap:20px}.public-dark.travel-experience .card-image{height:245px}
+ .public-dark.travel-experience .destination-card{height:340px}.public-dark.travel-experience .why-image>img{height:520px}.public-dark.travel-experience .cta-banner{padding:40px}
+}
+@media(max-width:767px){
+ .travel-experience .container{width:calc(100% - 36px)}
+ .public-dark.travel-experience #main>.home-slider .hero-content{width:calc(100% - 36px);padding-top:103px;padding-bottom:65px;min-height:890px}
+ .public-dark.travel-experience .hero.home-slider .home-slide{min-height:890px}
+ .travel-experience .hero-caption{font-size:7px;letter-spacing:1.1px;margin-bottom:30px}.travel-experience .hero-caption>span:last-child{display:none}
+ .travel-experience .adventure-kicker{font-size:12px;letter-spacing:.4px;margin-bottom:18px}
+ .travel-experience .hero-display{font-size:17.8vw;letter-spacing:-.025em;line-height:1.05}.travel-experience .hero-display>span{font-size:8px;letter-spacing:4px;margin-top:14px}
+ .travel-experience .adventure-story{width:100%;max-width:480px;margin:30px auto 0;padding:22px;background:linear-gradient(120deg,#242424c9,#24242496);border-radius:18px}
+ .travel-experience .adventure-label{font-size:8px;letter-spacing:1.6px}
+ .public-dark.travel-experience .hero.home-slider .slide-title{font-size:25px!important;line-height:1.5;margin:12px 0 10px;letter-spacing:-.4px}
+ .travel-experience .adventure-story>p{font-size:12px;color:#e3e3e3}
+ .public-dark.travel-experience .hero-actions{gap:16px;margin-top:20px}.public-dark.travel-experience .hero-actions .btn{font-size:12px;padding:12px 17px;min-height:48px}
+ .travel-experience .adventure-postcards{position:relative;right:auto;top:auto;width:270px;height:185px;margin:22px auto 0}
+ .travel-experience .adventure-postcard{width:124px;height:155px;border-width:4px;border-bottom-width:23px}.travel-experience .postcard-mountain{left:6px;top:0;transform:rotate(-8deg)}.travel-experience .postcard-ocean{right:6px;top:12px;transform:rotate(8deg)}
+ .travel-experience .adventure-postcard>span{font-size:5.7px;bottom:-18px;left:3px;letter-spacing:.7px}.travel-experience .adventure-compass{width:50px;height:50px;left:112px;top:125px;border-width:4px}.travel-experience .adventure-compass .material-icons{font-size:28px}
+ .travel-experience .hero-orbit{display:none}.travel-experience .hero-bottom-note{margin-top:15px;padding-top:18px}.travel-experience .hero-bottom-note>span{font-size:6px;letter-spacing:1px}.travel-experience .hero-bottom-note a{font-size:10px;gap:8px}
+ .public-dark.travel-experience .hero.home-slider .slider-controls [data-prev],.public-dark.travel-experience .hero.home-slider .slider-controls [data-next]{bottom:8px}
+ .public-dark.travel-experience .hero.home-slider .slider-dots{bottom:6px}
+ .public-dark.travel-experience .search-container{margin-top:0;padding-bottom:0}
+ .public-dark.travel-experience .search-form{padding:17px;border-radius:18px;gap:12px}
+ .public-dark.travel-experience .search-types{gap:8px;padding-bottom:3px}
+ .public-dark.travel-experience .search-type{font-size:11px;padding:9px 15px;min-height:44px}
+ .public-dark.travel-experience .search-form .search-field{padding:12px 13px;min-height:74px}
+ .public-dark.travel-experience .search-form>.btn{min-height:50px}
+ .public-dark.travel-experience .benefit-strip{padding-block:28px;gap:20px}.public-dark.travel-experience .benefit-strip>div{justify-content:flex-start;gap:14px}.public-dark.travel-experience .benefit-strip b{font-size:12px}.public-dark.travel-experience .benefit-strip small{font-size:11px}
+ .public-dark.travel-experience .section{padding-block:60px}.public-dark.travel-experience .section-head{margin-bottom:27px;gap:18px;align-items:flex-start}.public-dark.travel-experience .section-head h2{font-size:28px;letter-spacing:-.7px}.public-dark.travel-experience .section-head p{font-size:12px}.travel-experience .eyebrow{font-size:8px;letter-spacing:1.7px}
+ .public-dark.travel-experience .tour-grid{gap:22px}.public-dark.travel-experience .card-image{height:265px}.public-dark.travel-experience .card-body{padding:20px}.public-dark.travel-experience .card-body h3{font-size:19px}
+ .public-dark.travel-experience .destination-grid{gap:14px}.public-dark.travel-experience .destination-card{height:290px;border-radius:90px 90px 16px 16px}.public-dark.travel-experience .destination-card:nth-child(even){margin-top:25px}.public-dark.travel-experience .destination-card h3{font-size:21px}
+ .public-dark.travel-experience .why-grid{gap:35px}.public-dark.travel-experience .why-image{padding-right:10px}.public-dark.travel-experience .why-image>img{height:430px;border-radius:130px 130px 20px 20px}.public-dark.travel-experience .why-copy h2{font-size:34px}.public-dark.travel-experience .photo-note{padding:20px 24px}
+ .public-dark.travel-experience .steps-section{padding-block:60px}.public-dark.travel-experience .steps-section h2{font-size:29px}.public-dark.travel-experience .steps-grid>div>span{font-size:60px}
+ .public-dark.travel-experience .cta-banner{padding:30px 25px;border-radius:22px}.public-dark.travel-experience .cta-banner h2{font-size:28px}.public-dark.travel-experience .cta-banner p{font-size:12px}
+ .public-dark.travel-experience .hero.type-hero:not(.home-slider){min-height:360px}.public-dark.travel-experience .hero.type-hero:not(.home-slider) .hero-content{padding-top:115px;padding-bottom:55px}.public-dark.travel-experience .hero.type-hero:not(.home-slider) h1{font-size:36px;line-height:1.5;letter-spacing:-1px}
+ .travel-experience .rv-company .container{width:calc(100% - 36px)}
+ .travel-experience footer{margin-top:55px}.travel-experience .footer-wordmark{font-size:14vw;letter-spacing:-.02em}.travel-experience .footer-grid{gap:30px}.travel-back-top{right:14px;bottom:18px;width:44px;height:44px}
+ .travel-experience:has(.trip-mobile-action) .travel-back-top{bottom:100px}
+}
+@media(max-width:374px){.travel-experience .adventure-story{padding:18px}.public-dark.travel-experience .hero.home-slider .slide-title{font-size:22px!important}.public-dark.travel-experience .hero-actions{gap:12px}.public-dark.travel-experience .hero-actions .btn{padding:11px 14px;font-size:11px}.public-dark.travel-experience .hero-text-link{font-size:10px}.travel-experience .adventure-postcards{height:175px}.travel-experience .hero-bottom-note>span{max-width:43%}}
+@media(prefers-reduced-motion:reduce){.travel-experience *,.travel-experience *:before,.travel-experience *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.travel-experience .rv-reveal.is-pending{opacity:1;transform:none}}
+@media print{.travel-experience{color:#111111;background:white;color-scheme:light}.travel-experience p{color:#333333}.travel-back-top,.adventure-postcards{display:none!important}}
