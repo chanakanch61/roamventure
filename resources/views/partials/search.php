@@ -18,6 +18,7 @@
 ?>
 <form class="search-form" action="<?= e($searchAction) ?>" method="get" role="search" aria-label="<?= e($searchScoped ? 'ค้นหาโปรแกรมใน'.$search_scope : ($searchPrivate ? 'ค้นหาแพ็คเกจส่วนตัว' : 'ค้นหาทัวร์')) ?>" data-tour-search data-search-mode="<?= e($searchMode) ?>" data-search-scope="<?= e($search_scope ?? '') ?>">
  <?php if ($searchScoped): ?><input type="hidden" name="program_type" value="<?= e($searchMode) ?>"><?php endif ?>
+ <?php if (($filters['sort'] ?? 'recommended') !== 'recommended'): ?><input type="hidden" name="sort" value="<?= e($filters['sort']) ?>"><?php endif ?>
  <?php if (!empty($show_search_types)): ?>
  <div class="search-types" role="group" aria-label="ประเภทการเดินทาง" data-search-types>
   <?php if ($searchScoped): ?><button type="button" class="search-type" aria-pressed="<?= $searchMode==='all' ? 'true' : 'false' ?>" data-search-path="<?= e($searchAction) ?>" data-search-kind="all">ทั้งหมด</button><?php else: ?><button type="button" class="search-type" aria-pressed="<?= $searchMode==='fixed' ? 'true' : 'false' ?>" data-search-path="<?= e(base_url().'tours') ?>" data-search-kind="tour">ทัวร์ทั้งหมด</button><?php endif ?>

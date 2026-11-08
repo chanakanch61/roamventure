@@ -22,6 +22,15 @@ document.querySelectorAll('form').forEach(form => {
  });
 });
 
+// Listing sort applies on change; the default order needs no query string.
+document.querySelectorAll('[data-listing-sort]').forEach(form => {
+ form.classList.add('is-live');
+ form.addEventListener('formdata', event => {
+  if (event.formData.get('sort') === 'recommended') event.formData.delete('sort');
+ });
+ form.querySelector('select').addEventListener('change', () => form.requestSubmit());
+});
+
 // The ticket help button sits beside the flights, but the choice itself belongs to the booking form.
 document.querySelectorAll('[data-ticket-help]').forEach(button => button.addEventListener('click', () => {
  const box = document.querySelector('#ticket-help');
@@ -85,6 +94,66 @@ document.querySelectorAll('[data-search-types]').forEach(group => {
  window.addEventListener('pageshow', updateHeader);
  if (topbar && 'ResizeObserver' in window) new ResizeObserver(updateHeader).observe(topbar);
  if (listingSearch && 'ResizeObserver' in window) new ResizeObserver(updateHeader).observe(header);
+})();
+
+// Mobile listing search: once the form scrolls under the header, show a one-line summary bar that reopens it.
+(() => {
+ const wrap = document.querySelector('.listing-search');
+ const bar = wrap?.querySelector('.listing-search-bar');
+ const form = wrap?.querySelector('.search-form');
+ if (!bar || !form) return;
+ const mobile = window.matchMedia('(max-width:800px)');
+ const summary = bar.querySelector('.listing-search-summary');
+ let openedAt = 0;
+ const describe = () => {
+  const q = form.elements.q?.value.trim();
+  const month = form.elements.month;
+  const from = form.elements.date_from;
+  let when = '';
+  if (month && !month.disabled && month.value) when = month.selectedOptions[0]?.textContent || '';
+  else if (from && !from.disabled && from.value) when = form.querySelector('.date-range-value')?.textContent.replace(/\s+/g, ' ').trim() || '';
+  // Label on top (e.g. "ค้นหาแพ็คเกจที่ใช่"), current filters below, or a prompt when nothing is filtered.
+  const label = document.createElement('small');
+  label.textContent = form.querySelector('.search-label')?.textContent || 'ค้นหา';
+  const value = document.createElement('strong');
+  value.textContent = [q, when].filter(Boolean).join(' · ') || 'ประเทศ เส้นทาง หรือช่วงเวลาเดินทาง';
+  summary.replaceChildren(label, value);
+ };
+ const isOpen = () => wrap.classList.contains('is-open');
+ const close = () => {
+  if (!isOpen()) return;
+  wrap.classList.remove('is-open');
+  wrap.style.minHeight = '';
+  bar.setAttribute('aria-expanded', 'false');
+  update();
+ };
+ function update() {
+  if (!mobile.matches) { close(); wrap.classList.remove('is-compact'); return; }
+  if (isOpen()) { if (Math.abs(window.scrollY - openedAt) > 80) close(); return; }
+  const top = parseFloat(getComputedStyle(wrap).getPropertyValue('--listing-search-top')) || 98;
+  const compact = wrap.getBoundingClientRect().bottom < top;
+  if (compact) describe();
+  wrap.classList.toggle('is-compact', compact);
+ }
+ bar.addEventListener('click', () => {
+  // Keep the form's original space so the page does not jump while it floats.
+  wrap.style.minHeight = `${wrap.offsetHeight}px`;
+  openedAt = window.scrollY;
+  wrap.classList.add('is-open');
+  bar.setAttribute('aria-expanded', 'true');
+ });
+ document.addEventListener('click', e => {
+  // composedPath survives the date picker re-rendering the clicked day button.
+  const path = e.composedPath();
+  if (isOpen() && !path.includes(form) && !path.includes(bar)) close();
+ });
+ document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && isOpen() && !form.querySelector('dialog[open]')) { close(); bar.focus(); }
+ });
+ window.addEventListener('scroll', update, { passive: true });
+ window.addEventListener('resize', update);
+ window.addEventListener('pageshow', update);
+ update();
 })();
 
 (() => {

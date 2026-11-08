@@ -220,17 +220,58 @@ class TripRepository
         return $this->airlines->attach($this->places->attach($tours));
     }
 
+    // First bookable day of a listing period: a private window's first open date, or a group departure that still has seats.
+    private function period_start($tour, $period)
+    {
+        if ($tour['program_type'] === 'private') {
+            return PrivatePackage::first_date($period + ['days' => $tour['days']]);
+        }
+
+        return (int) $period['seats_available'] > 0 ? $period['start_date'] : null;
+    }
+
+    // Re-orders listing() rows for the visitor's sort choice. Tours missing the sorted value go last,
+    // and usort is stable, so ties keep the admin's sort_order.
+    public function sort_listing($tours, $sort)
+    {
+        $key = match ($sort) {
+            'price_asc', 'price_desc' => fn ($t) => $t['min_price'] !== null && (float) $t['min_price'] > 0 ? (float) $t['min_price'] : null,
+            'departure' => function ($t) {
+                $dates = array_filter(array_map(fn ($p) => $this->period_start($t, $p), $t['card_periods']));
+
+                return $dates ? min($dates) : null;
+            },
+            'duration' => fn ($t) => (int) $t['days'] > 0 ? (int) $t['days'] : null,
+            'popular' => fn ($t) => (int) ($t['view_count'] ?? 0),
+            default => null,
+        };
+        if (! $key) {
+            return $tours;
+        }
+        $desc = in_array($sort, ['price_desc', 'popular'], true);
+        $values = array_map($key, $tours);
+        $order = array_keys($tours);
+        usort($order, function ($a, $b) use ($values, $desc) {
+            if ($values[$a] === null || $values[$b] === null) {
+                return ($values[$a] === null) <=> ($values[$b] === null);
+            }
+
+            return $desc ? $values[$b] <=> $values[$a] : $values[$a] <=> $values[$b];
+        });
+
+        return array_map(fn ($i) => $tours[$i], $order);
+    }
+
     // One card per route, built from listing() rows so prices and dates respect seats and private travel windows.
     public function route_cards($tours, $type)
     {
         $cards = [];
         foreach ($tours as $tour) {
-            $isPrivate = $tour['program_type'] === 'private';
             $next = null;
             $last = null;
             $people = [];
             foreach ($tour['card_periods'] as $period) {
-                $start = $isPrivate ? PrivatePackage::first_date($period + ['days' => $tour['days']]) : ((int) $period['seats_available'] > 0 ? $period['start_date'] : null);
+                $start = $this->period_start($tour, $period);
                 if ($start === null) {
                     continue;
                 }

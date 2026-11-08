@@ -26,6 +26,7 @@
 <link rel="stylesheet" href="<?= base_url().'public/tour-detail.css?v='.filemtime(base_path()."/".'public/tour-detail.css') ?>">
 <link rel="stylesheet" href="<?= base_url().'public/day-mosaic.css?v='.filemtime(base_path()."/".'public/day-mosaic.css') ?>">
 <script src="<?= base_url().'public/tour-detail.js?v='.filemtime(base_path()."/".'public/tour-detail.js') ?>" defer></script>
+<script src="<?= base_url().'public/share-buttons.js?v='.filemtime(base_path()."/".'public/share-buttons.js') ?>" defer></script>
 <?php endif ?>
 <link rel="stylesheet" href="<?= base_url().'public/monochrome.css?v='.filemtime(base_path()."/".'public/monochrome.css') ?>">
 <script src="<?= base_url().'public/motion.js?v='.filemtime(base_path()."/".'public/motion.js') ?>" defer></script>

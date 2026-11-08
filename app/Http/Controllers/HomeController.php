@@ -37,6 +37,7 @@ class HomeController extends Controller
         // Searching narrows the page to matching programs, so the route cards step aside.
         $searching = $filters['q'] !== '' || $filters['destination'] !== '' || $filters['date_from'] !== '';
         $routeCards = $searching ? [] : $this->trips->route_cards($tours, $type);
+        $tours = $this->trips->sort_listing($tours, $filters['sort']);
 
         return $this->render('tours', ['title' => $channel['label'] ?? 'ทัวร์ต่างประเทศ', 'listing_type' => $type, 'listing_path' => $channel['path'] ?? 'tours', 'tours' => $tours, 'filters' => $filters, 'destinations' => $this->trips->destinations(), 'listing_searching' => $searching, 'route_cards' => $routeCards, 'route_extras' => $this->trips->route_extras($type, $routeCards)]);
     }
@@ -54,8 +55,31 @@ class HomeController extends Controller
         if (! session('request_token')) {
             session()->put('request_token', bin2hex(random_bytes(24)));
         }
+        $tour['view_count'] = $this->count_view($tour);
 
         return $this->render('detail', ['title' => $tour['title'], 'tour' => $tour, 'preview' => false, 'related_tours' => $this->trips->related($tour), 'structured_data' => $this->tour_structured_data($tour)]);
+    }
+
+    /**
+     * Counts one view per session per program; admins, bots and prefetches are skipped.
+     */
+    private function count_view($tour)
+    {
+        $count = (int) ($tour['view_count'] ?? 0);
+        $agent = (string) request()->userAgent();
+        $prefetch = in_array(strtolower((string) request()->header('Sec-Purpose', request()->header('Purpose', ''))), ['prefetch', 'prerender'], true);
+        if (session('admin_id') || ! request()->isMethod('GET') || $prefetch || $agent === '' || preg_match('/bot|crawl|spider|slurp|preview|facebookexternalhit|lighthouse|headless|curl|wget|python|monitor/i', $agent)) {
+            return $count;
+        }
+        $viewed = (array) session('viewed_tours', []);
+        if (in_array((int) $tour['id'], $viewed, true)) {
+            return $count;
+        }
+        DB::table('tours')->where('id', $tour['id'])->increment('view_count');
+        $viewed[] = (int) $tour['id'];
+        session()->put('viewed_tours', array_slice($viewed, -200));
+
+        return $count + 1;
     }
 
     private function tour_structured_data($tour)
@@ -139,7 +163,7 @@ class HomeController extends Controller
         if ($type !== 'all') {
             $filters['program_type'] = $type;
         }
-        $tours = $this->trips->listing($filters);
+        $tours = $this->trips->sort_listing($this->trips->listing($filters), $filters['sort']);
         $node['onpage_content'] = $this->places->clean_content($node['onpage_content'] ?? '');
 
         return $this->render('destination', ['destination_page' => true, 'title' => 'ทัวร์'.$node['name'], 'node' => $node, 'search_scope' => $node['name'], 'listing_type' => $type, 'listing_path' => substr($url, strlen(base_url())), 'filters' => $filters, 'trail' => $this->places->trail($node), 'children' => $this->places->children($node['id']), 'tours' => $tours, 'listing_searching' => $filters['q'] !== '' || $filters['date_from'] !== '', 'meta' => ['canonical' => $url, 'title' => $node['meta_title'] ?: 'ทัวร์'.$node['name'].' | RoamVenture', 'description' => $node['meta_description'] ?: mb_substr($node['description'] ?: 'ค้นหาโปรแกรมทัวร์'.$node['name'].' พร้อมวันเดินทาง ราคาและที่นั่งว่าง กับ RoamVenture', 0, 300), 'keywords' => $node['meta_keywords'], 'image' => tour_image($node['cover_path'] ?: ($tours[0]['cover'] ?? ''))]]);
@@ -152,7 +176,11 @@ class HomeController extends Controller
             $filters[$key] = is_string(request()->query($key)) ? mb_substr(trim(request()->query($key)), 0, 100) : '';
         }
 
-        return $this->trips->normalize_travel_dates($filters);
+        $sort = request()->query('sort');
+        $filters = $this->trips->normalize_travel_dates($filters);
+        $filters['sort'] = is_string($sort) && isset(tour_sort_options()[$sort]) ? $sort : 'recommended';
+
+        return $filters;
     }
 
     public function book()

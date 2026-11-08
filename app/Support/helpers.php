@@ -142,6 +142,18 @@ function program_channels()
         'private' => ['label' => 'แพ็คเกจส่วนตัว', 'eyebrow' => 'PRIVATE PACKAGE', 'badge' => 'ทริปส่วนตัว', 'path' => 'packages', 'list_title' => 'แพ็คเกจส่วนตัว', 'blurb' => 'เฉพาะกลุ่มของคุณ เลือกวันเดินทางเอง'],
     ];
 }
+// Public listing sort choices; the first key is the default and keeps the admin's sort_order.
+function tour_sort_options()
+{
+    return [
+        'recommended' => 'แนะนำ',
+        'price_asc' => 'ราคา: ต่ำ → สูง',
+        'price_desc' => 'ราคา: สูง → ต่ำ',
+        'departure' => 'ออกเดินทางเร็วที่สุด',
+        'duration' => 'จำนวนวัน: น้อย → มาก',
+        'popular' => 'ยอดนิยม',
+    ];
+}
 function tour_channel($tour)
 {
     if (($tour['program_type'] ?? 'fixed') === 'private') {

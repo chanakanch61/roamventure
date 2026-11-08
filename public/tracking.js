@@ -7,7 +7,6 @@
  try { config = JSON.parse(node.textContent); } catch (_) { return; }
  const storageKey = 'rv.tracking.consent.v1';
  const banner = document.getElementById('tracking-consent');
- const preferences = document.getElementById('tracking-preferences');
  let choice = null, started = false, checkout = false;
  try { const saved = JSON.parse(localStorage.getItem(storageKey)); if (saved && saved.expires > Date.now()) choice = saved.choice; } catch (_) {}
  window.dataLayer = window.dataLayer || [];
@@ -100,7 +99,7 @@
  }
  window.rvTracking = {get consent() { return choice; },get active() { return started && choice === 'granted'; }};
  document.querySelectorAll('[data-tracking-consent]').forEach(button => button.addEventListener('click', () => choose(button.dataset.trackingConsent)));
- preferences?.addEventListener('click', () => { if (banner) { banner.hidden = false; banner.querySelector('button')?.focus(); } });
+ document.querySelectorAll('[data-tracking-preferences]').forEach(button => button.addEventListener('click', () => { if (banner) { banner.hidden = false; banner.querySelector('button')?.focus(); } }));
  if (banner) banner.hidden = choice === 'granted' || choice === 'denied';
  document.addEventListener('click', e => {
   const link = e.target.closest('a[href]');
