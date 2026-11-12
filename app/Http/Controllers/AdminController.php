@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Repositories\HotelLibraryRepository;
 use App\Support\PrivatePackage;
 use App\Support\VehicleOptions;
 use DateTime;
@@ -156,7 +157,7 @@ return $this->render('detail', ['title' => 'ตัวอย่าง: '.$tour['t
                 $errors[] = 'วันที่ '.$dayNumber.': กรุณาใส่ชื่อโรงแรมไม่เกิน 200 ตัวอักษร';
             }
             foreach ($images as $path) {
-                if (! is_string($path) || ! (in_array($path, $oldPaths, true) || preg_match($own, $path)) || ! is_file(base_path($path))) {
+                if (! is_string($path) || ! (in_array($path, $oldPaths, true) || preg_match($own, $path) || preg_match(HotelLibraryRepository::IMAGE, $path)) || ! is_file(base_path($path))) {
                     $errors[] = 'วันที่ '.$dayNumber.': รูปโรงแรมไม่ถูกต้อง กรุณาอัปโหลดใหม่';
                     $images = [];
                     break;
@@ -267,6 +268,8 @@ return $this->render('detail', ['title' => 'ตัวอย่าง: '.$tour['t
             $data['program_type'] = in_array($type, ['fixed', 'private'], true) ? $type : 'fixed';
             $isPrivate = $data['program_type'] === 'private';
             $data['flight_included'] = request()->post('flight_included') === '1' ? 1 : 0;
+            $stars = request()->post('hotel_stars');
+            $data['hotel_stars'] = is_string($stars) && preg_match('/^[1-5]$/D', $stars) ? (int) $stars : null;
             foreach (['airline', 'title', 'summary', 'highlights', 'hotel_details', 'transport_details', 'guide_details', 'photographer_details', 'inclusions', 'exclusions', 'payment_terms', 'cancellation_terms', 'know_before_go', 'terms', 'seo_description', 'seo_title', 'seo_keywords'] as $field) {
                 $value = request()->post($field);
                 $data[$field] = is_string($value) ? trim($value) : '';
@@ -417,25 +420,36 @@ return $this->render('detail', ['title' => 'ตัวอย่าง: '.$tour['t
                     if (! is_array($dep)) {
                         continue;
                     }
-                    $start = is_string($dep['start_date'] ?? null) ? $dep['start_date'] : '';
-                    $end = is_string($dep['end_date'] ?? null) ? $dep['end_date'] : '';
-                    if (! $this->valid_date($start) || ! $this->valid_date($end) || $end < $start) {
-                        $errors[] = 'วันเดินทางไม่ถูกต้อง';
-                    } elseif (! $isPrivate && (int) (new DateTime($start))->diff(new DateTime($end))->days + 1 !== $data['days']) {
-                        $errors[] = 'ช่วงวันเดินทางต้องตรงกับจำนวนวันของโปรแกรม';
+                    // An anytime private period has no dates of its own; it opens from today to its booking horizon.
+                    $anytime = $isPrivate && ($dep['anytime'] ?? '') === '1';
+                    $advanceMonths = null;
+                    if ($anytime) {
+                        $start = PrivatePackage::ANYTIME_START;
+                        $end = PrivatePackage::ANYTIME_END;
+                        $advanceMonths = filter_var($dep['advance_months'] ?? '', FILTER_VALIDATE_INT);
+                        if (! in_array($advanceMonths, PrivatePackage::ADVANCE_MONTHS, true)) {
+                            $errors[] = 'เลือกระยะจองล่วงหน้า '.implode(', ', PrivatePackage::ADVANCE_MONTHS).' เดือน';
+                            $advanceMonths = 12;
+                        }
+                        if (in_array(1, array_column($departures, 'anytime'), true)) {
+                            $errors[] = 'รอบแบบเดินทางได้ตลอดมีได้ 1 รอบต่อโปรแกรม';
+                        }
+                    } else {
+                        $start = is_string($dep['start_date'] ?? null) ? $dep['start_date'] : '';
+                        $end = is_string($dep['end_date'] ?? null) ? $dep['end_date'] : '';
+                        if (! $this->valid_date($start) || ! $this->valid_date($end) || $end < $start) {
+                            $errors[] = 'วันเดินทางไม่ถูกต้อง';
+                        } elseif (! $isPrivate && (int) (new DateTime($start))->diff(new DateTime($end))->days + 1 !== $data['days']) {
+                            $errors[] = 'ช่วงวันเดินทางต้องตรงกับจำนวนวันของโปรแกรม';
+                        }
+                        if (in_array($start, $dateKeys, true)) {
+                            $errors[] = 'วันเริ่มเดินทางซ้ำ';
+                        } $dateKeys[] = $start;
                     }
-                    if (in_array($start, $dateKeys, true)) {
-                        $errors[] = 'วันเริ่มเดินทางซ้ำ';
-                    } $dateKeys[] = $start;
                     $rates = [];
                     $blackouts = [];
-                    $lead = 0;
                     if ($isPrivate) {
                         $rates = PrivatePackage::rates($dep['rates'] ?? [], $errors);
-                        $lead = filter_var($dep['lead_days'] ?? 0, FILTER_VALIDATE_INT);
-                        if ($lead === false || $lead < 0 || $lead > 3650) {
-                            $errors[] = 'วันจองล่วงหน้าต้องอยู่ระหว่าง 0–3650';
-                        }
                         $blocked = $dep['blackout_dates'] ?? '';
                         if (! is_string($blocked) || strlen($blocked) > 12000) {
                             $errors[] = 'วันงดเดินทางไม่ถูกต้อง';
@@ -448,11 +462,12 @@ return $this->render('detail', ['title' => 'ตัวอย่าง: '.$tour['t
                                 }
                             }
                         }
-                        if (PrivatePackage::date($start) && PrivatePackage::date($end) && (int) (new DateTime($start))->diff(new DateTime($end))->days + 1 < $data['days']) {
+                        if (! $anytime && PrivatePackage::date($start) && PrivatePackage::date($end) && (int) (new DateTime($start))->diff(new DateTime($end))->days + 1 < $data['days']) {
                             $errors[] = 'ช่วงวันต้องยาวพอสำหรับโปรแกรม';
                         }
+                        // Dated periods may sit inside the anytime period; they take over the dates they cover.
                         foreach ($departures as $other) {
-                            if ($start <= $other['end_date'] && $end >= $other['start_date']) {
+                            if (! $anytime && ! $other['anytime'] && $start <= $other['end_date'] && $end >= $other['start_date']) {
                                 $errors[] = 'ช่วงเดินทางแพ็คเกจส่วนตัวต้องไม่ซ้อนกัน';
                             }
                         }
@@ -469,8 +484,8 @@ return $this->render('detail', ['title' => 'ตัวอย่าง: '.$tour['t
                     if ($single !== '' && (! is_scalar($single) || ! preg_match('/^\d{1,8}(\.\d{1,2})?$/', (string) $single))) {
                         $errors[] = 'ค่าพักเดี่ยวต้องเป็น 0 หรือจำนวนเงินบวก ทศนิยมไม่เกิน 2 ตำแหน่ง';
                     }
-                    $departures[] = ['id' => (int) ($dep['id'] ?? 0), 'start_date' => $start, 'end_date' => $end, 'active' => empty($dep['active']) ? 0 : 1, 'capacity' => (int) $capacity, 'price_per_person' => $price, 'single_supplement' => $single === '' ? null : (is_scalar($single) ? (float) $single : null)];
-                    $departures[count($departures) - 1] += ['private_rates' => $isPrivate ? json_encode($rates, JSON_UNESCAPED_UNICODE) : null, 'lead_days' => (int) $lead, 'blackout_dates' => $isPrivate ? json_encode(array_values(array_unique($blackouts))) : null];
+                    $departures[] = ['id' => (int) ($dep['id'] ?? 0), 'start_date' => $start, 'end_date' => $end, 'anytime' => $anytime ? 1 : 0, 'advance_months' => $advanceMonths, 'active' => empty($dep['active']) ? 0 : 1, 'capacity' => (int) $capacity, 'price_per_person' => $price, 'single_supplement' => $single === '' ? null : (is_scalar($single) ? (float) $single : null)];
+                    $departures[count($departures) - 1] += ['private_rates' => $isPrivate ? json_encode($rates, JSON_UNESCAPED_UNICODE) : null, 'lead_days' => 0, 'blackout_dates' => $isPrivate ? json_encode(array_values(array_unique($blackouts))) : null];
                     $cutoff = filter_var($dep['deposit_cutoff_days'] ?? 30, FILTER_VALIDATE_INT);
                     $balance = filter_var($dep['balance_due_days'] ?? 14, FILTER_VALIDATE_INT);
                     if ($cutoff === false || $cutoff < 0 || $cutoff > 3650 || $balance === false || $balance < 0 || $balance > 3650 || (! empty($dep['deposit_enabled']) && ($data['deposit_per_person'] <= 0 || $balance > $cutoff))) {
@@ -639,7 +654,7 @@ return $this->render('detail', ['title' => 'ตัวอย่าง: '.$tour['t
             $tour = array_merge($data, ['id' => $id, 'itinerary' => $days, 'departures' => $departures, 'images' => $images, 'destinations' => $routeRows, 'flight_sets' => $flightSets]);
         }
 
-        return $this->render('admin/editor', ['title' => $id ? 'แก้ไขโปรแกรม' : 'เพิ่มโปรแกรม', 'tour' => $tour, 'hotel_folder' => $hotelFolder, 'errors' => $errors, 'destination_nodes' => $this->places->all(), 'airline_options' => $this->airlines->options($id), 'vehicle_templates' => $this->vehicle_templates->all()], true);
+        return $this->render('admin/editor', ['title' => $id ? 'แก้ไขโปรแกรม' : 'เพิ่มโปรแกรม', 'tour' => $tour, 'hotel_folder' => $hotelFolder, 'errors' => $errors, 'destination_nodes' => $this->places->all(), 'airline_options' => $this->airlines->options($id), 'vehicle_templates' => $this->vehicle_templates->all(), 'hotel_library' => $this->hotel_library->all()], true);
     }
 
     private function posted_flight_sets($isPrivate, $tourId, &$errors)

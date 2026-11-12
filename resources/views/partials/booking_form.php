@@ -1,5 +1,6 @@
 <?php
 $adminBooking=!empty($admin_booking);
+$recaptchaKey=$adminBooking ? '' : app(\App\Support\Recaptcha::class)->site_key();
 if ($isPrivate) {
  $bookingToday=date('Y-m-d'); $firstStarts=[]; $lastStarts=[];
  foreach ($available as $period) {
@@ -10,11 +11,12 @@ if ($isPrivate) {
  }
  $firstStart=$firstStarts ? min($firstStarts) : null;
  $lastStart=$lastStarts ? max($lastStarts) : null;
- $dateHint=$firstStart ? 'เริ่มเดินทางได้ตั้งแต่ '.thai_date($firstStart).' · ตามระยะจองล่วงหน้าและวันเปิดขายของแต่ละช่วง' : 'ยังไม่มีวันที่เปิดรับจองในช่วงนี้';
+ $dateHint=$firstStart ? 'เริ่มเดินทางได้ตั้งแต่ '.thai_date($firstStart).' · ตามเวลาตัดรอบการจองและวันเปิดขายของแต่ละช่วง' : 'ยังไม่มีวันที่เปิดรับจองในช่วงนี้';
 }
 ?>
-<form action="<?= base_url() . ($adminBooking ? 'admin/bookings/new' : 'booking') ?>" method="post" class="stack-form" id="booking-form"<?= $adminBooking ? '' : ' data-quick-quote' ?>>
+<form action="<?= base_url() . ($adminBooking ? 'admin/bookings/new' : 'booking') ?>" method="post" class="stack-form" id="booking-form"<?= $adminBooking ? '' : ' data-quick-quote' ?><?= $recaptchaKey ? ' data-recaptcha="'.e($recaptchaKey).'"' : '' ?>>
  <?= csrf_field() ?>
+ <?php if ($recaptchaKey): ?><input type="hidden" name="recaptcha_token" value=""><?php endif ?>
  <input type="hidden" name="request_token" value="<?= e($adminBooking ? $request_token : session('request_token')) ?>">
  <input type="hidden" name="quote" id="departure-quote" value="">
  <?php if ($adminBooking): ?><input type="hidden" name="tour_id" value="<?= (int)$booking_tour_id ?>"><?php else: ?><div class="honeypot" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div><?php endif ?>
@@ -35,7 +37,7 @@ if ($isPrivate) {
  <?php endforeach ?>
  <small id="room-help" aria-live="polite">เลือกวันเดินทางก่อน แล้วระบุจำนวนห้องพัก</small></fieldset>
  <?php if (!$adminBooking): ?></details></div><?php endif ?>
- <div class="booking-total" aria-live="polite"><div><span>ราคาทัวร์ต่อคน</span><strong id="price-person">—</strong></div><div><span>ค่าทัวร์ <span id="base-count"></span></span><b id="base-total">—</b></div><div><span>ค่าพักเดี่ยวเพิ่ม <span id="supplement-count"></span></span><b id="supplement-total">—</b></div><div class="grand-total"><span>ยอดรวมทั้งหมด</span><strong id="price-total">—</strong></div><small><?= $isPrivate ? 'กรุ๊ปส่วนตัว · ทีมงานตรวจสอบรถ โรงแรม และบริการก่อนยืนยัน' : 'คำขอยังไม่กันที่นั่ง ตัดที่นั่งเมื่อทีมงานยืนยันแล้ว' ?></small></div>
+ <div class="booking-total" aria-live="polite"><div><span>ราคาทัวร์ต่อคน (ทั้งทริป)</span><strong id="price-person">—</strong></div><div><span>ค่าทัวร์ <span id="base-count"></span></span><b id="base-total">—</b></div><div><span>ค่าพักเดี่ยวเพิ่ม <span id="supplement-count"></span></span><b id="supplement-total">—</b></div><div class="grand-total"><span>ยอดรวมทั้งหมด</span><strong id="price-total">—</strong></div><small><?= $isPrivate ? 'กรุ๊ปส่วนตัว · ทีมงานตรวจสอบรถ โรงแรม และบริการก่อนยืนยัน' : 'คำขอยังไม่กันที่นั่ง ตัดที่นั่งเมื่อทีมงานยืนยันแล้ว' ?></small></div>
  <?php if (!$adminBooking): ?><button type="button" class="btn full" id="booking-next" disabled>ถัดไป</button></div>
  <div class="booking-contact" id="booking-contact" tabindex="-1" hidden<?= !empty($old['customer_name']) ? ' data-open' : '' ?>>
  <?php load_view('partials/trip_summary',['isPrivate'=>$isPrivate]); ?>
@@ -52,7 +54,9 @@ if ($isPrivate) {
  <button type="submit" class="btn full" data-busy="กำลังสร้างการจอง…" disabled>สร้างการจอง</button><p class="fineprint">ใช้ราคาและที่นั่งว่างเดียวกับหน้าเว็บ · เลือก “ยืนยันแล้ว” เพื่อตัดที่นั่งและออก Invoice ทันที · ไม่ส่งข้อความหาลูกค้าอัตโนมัติ</p>
  <?php else: ?>
  <label class="checkbox"><input type="checkbox" name="consent" value="1" required><span>รับทราบ <a href="<?= base_url() . 'privacy' ?>" target="_blank" rel="noopener">การใช้ข้อมูลส่วนบุคคล</a> เพื่อดำเนินการคำขอและติดต่อกลับ</span></label>
- <div class="booking-actions"><button type="button" class="booking-back" id="booking-back"><i class="material-icons" aria-hidden="true">arrow_back</i> ย้อนกลับ</button><button type="submit" class="btn" disabled>ส่งคำขอจอง <span><i class="material-icons" aria-hidden="true">north_east</i></span></button></div><p class="fineprint">ยังไม่ใช่การยืนยันการจอง และยังไม่มีการเรียกเก็บเงิน</p></div></div>
+ <div class="booking-actions"><button type="button" class="booking-back" id="booking-back"><i class="material-icons" aria-hidden="true">arrow_back</i> ย้อนกลับ</button><button type="submit" class="btn" disabled>ส่งคำขอจอง <span><i class="material-icons" aria-hidden="true">north_east</i></span></button></div><p class="fineprint">ยังไม่ใช่การยืนยันการจอง และยังไม่มีการเรียกเก็บเงิน</p>
+ <?php if ($recaptchaKey): // Required by Google when the reCAPTCHA badge is hidden (see tour-detail.css). ?><p class="recaptcha-note">ป้องกันสแปมด้วย reCAPTCHA ภายใต้<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">นโยบายความเป็นส่วนตัว</a>และ<a href="https://policies.google.com/terms" target="_blank" rel="noopener">ข้อกำหนด</a>ของ Google</p><?php endif ?></div></div>
  <?php endif ?>
 </form>
+<?php if ($recaptchaKey): ?><script src="https://www.google.com/recaptcha/api.js?render=<?= rawurlencode($recaptchaKey) ?>" async defer></script><?php endif ?>
 <script type="application/json" id="departure-data"><?= json_encode($available,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_UNICODE) ?></script>

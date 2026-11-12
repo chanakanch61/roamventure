@@ -29,6 +29,7 @@
 .card-period-availability{display:flex;align-items:center;gap:5px;font-size:10px;line-height:1.5;color:#666}
 body .card-period-availability .material-icons{font-size:15px}
 body .card-periods-heading .material-icons{font-size:18px}
+.tour-card .card-period-bubbles .card-period-row.is-anytime{grid-column:1/-1}
 .tour-card .card-period-bubbles .card-period-row:hover{background:#eaeaea;border-color:#888}
 .tour-card .card-period-bubbles .card-period-row:focus-visible{outline:2px solid currentColor;outline-offset:3px}
 .tour-card .card-period-bubbles .card-period-row.is-full{border-style:dashed;background:transparent;color:#777}

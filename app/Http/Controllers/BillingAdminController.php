@@ -23,7 +23,12 @@ class BillingAdminController extends Controller
         if (! is_string($note)) {
             show_error('ข้อมูลไม่ถูกต้อง', 400);
         }
-        $error = $this->billing->review($p['booking_id'], $p['id'], request()->post('decision'), $note, request()->post('ack_difference') === '1');
+        $transfer = [];
+        foreach (['channel', 'transferred_at'] as $key) {
+            $value = request()->post($key);
+            $transfer[$key] = is_string($value) ? $value : '';
+        }
+        $error = $this->billing->review($p['booking_id'], $p['id'], request()->post('decision'), $note, request()->post('ack_difference') === '1', $transfer);
         session()->flash($error ? 'error' : 'success', $error ?: 'บันทึกผลตรวจสลิปแล้ว');
         redirect_to(base_url().('admin/bookings/'.$p['booking_id']));
     }

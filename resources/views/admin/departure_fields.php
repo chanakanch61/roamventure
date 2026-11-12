@@ -1,12 +1,20 @@
 <div class="repeater-item departure-item" data-index="<?= $i ?>">
  <input type="hidden" name="departures[<?= $i ?>][id]" value="<?= (int)($dep['id'] ?? 0) ?>">
  <div class="repeater-head"><h3>รอบเดินทาง</h3><button type="button" class="text-button danger" data-remove>นำรอบออก</button></div>
- <div class="form-grid"><label><span data-start-label>วันเริ่มเดินทาง</span><input type="date" required name="departures[<?= $i ?>][start_date]" value="<?= e($dep['start_date'] ?? '') ?>"></label><label><span data-end-label>วันกลับ</span><input type="date" required name="departures[<?= $i ?>][end_date]" value="<?= e($dep['end_date'] ?? '') ?>"></label></div>
+ <?php $depAnytime=\App\Support\PrivatePackage::anytime($dep); $depMonths=(int)($dep['advance_months'] ?? 0) ?: 12; ?>
+ <fieldset class="departure-mode" data-private-only hidden><legend>ช่วงวันที่ลูกค้าเลือกเดินทางได้</legend>
+  <label><input type="radio" name="departures[<?= $i ?>][anytime]" value="1" data-anytime-toggle <?= $depAnytime ? 'checked' : '' ?>><span><strong>เดินทางได้ตลอด</strong><small>ไม่ต้องกำหนดวันเริ่ม–วันสิ้นสุด ลูกค้าเลือกวันเองได้ทุกวัน</small></span></label>
+  <label><input type="radio" name="departures[<?= $i ?>][anytime]" value="0" data-anytime-toggle <?= $depAnytime ? '' : 'checked' ?>><span><strong>กำหนดช่วงวัน</strong><small>ระบุวันเริ่มและวันสิ้นสุดของพีเรียด</small></span></label>
+ </fieldset>
+ <div class="form-grid" data-range-fields><label><span data-start-label>วันเริ่มเดินทาง</span><input type="date" required name="departures[<?= $i ?>][start_date]" value="<?= $depAnytime ? '' : e($dep['start_date'] ?? '') ?>"></label><label><span data-end-label>วันกลับ</span><input type="date" required name="departures[<?= $i ?>][end_date]" value="<?= $depAnytime ? '' : e($dep['end_date'] ?? '') ?>"></label></div>
+ <div data-private-only hidden><div class="form-grid" data-anytime-fields hidden>
+  <label>จองล่วงหน้าได้สูงสุด<select name="departures[<?= $i ?>][advance_months]"><?php foreach (\App\Support\PrivatePackage::ADVANCE_MONTHS as $months): ?><option value="<?= $months ?>" <?= $months===$depMonths ? 'selected' : '' ?>><?= $months ?> เดือน</option><?php endforeach ?></select><small>ลูกค้าเลือกวันได้ตั้งแต่วันตัดรอบการจองถัดไป จนถึงวันนี้ + จำนวนเดือนนี้ (เลื่อนไปทุกวัน)</small></label>
+  <p class="fineprint">มีได้ 1 รอบต่อโปรแกรม · ถ้ามีรอบแบบกำหนดช่วงวันด้วย ทริปที่อยู่ในช่วงนั้นจะใช้ราคาของช่วงนั้นแทน เช่น ช่วงปีใหม่</p>
+ </div></div>
  <label class="checkbox"><input type="checkbox" name="departures[<?= $i ?>][active]" value="1" <?= !isset($dep['active']) || $dep['active'] ? 'checked' : '' ?>> เปิดรับคำขอสำหรับรอบนี้</label>
  <div class="form-grid" data-fixed-only><label>ไซส์กรุ๊ป / ที่นั่งทั้งหมด<input type="number" name="departures[<?= $i ?>][capacity]" required min="1" max="500" value="<?= e($dep['capacity'] ?? 6) ?>"><small>จำนวนสูงสุดของรอบ ไม่ใช่จำนวนที่ลูกค้าต้องจอง</small></label><label>ราคาต่อคน (บาท)<input type="number" name="departures[<?= $i ?>][price_per_person]" required min="0.01" max="99999999.99" step="0.01" value="<?= e($dep['price_per_person'] ?? '') ?>"></label></div>
  <div data-private-only hidden>
- <p>ทั้งวันไปและวันกลับต้องอยู่ในช่วงนี้ · แต่ละ booking เป็นกรุ๊ปส่วนตัว · ช่วงวันแต่ละพีเรียดต้องไม่ซ้อนกัน</p>
- <label>จองล่วงหน้าอย่างน้อย (วัน)<input type="number" name="departures[<?= $i ?>][lead_days]" min="0" max="3650" required value="<?= (int)($dep['lead_days'] ?? 0) ?>"></label>
+ <p data-range-fields>ทั้งวันไปและวันกลับต้องอยู่ในช่วงนี้ · แต่ละ booking เป็นกรุ๊ปส่วนตัว · ช่วงวันแต่ละพีเรียดต้องไม่ซ้อนกัน (ซ้อนกับรอบเดินทางได้ตลอดได้)</p>
  <label>วันงดเดินทาง<textarea name="departures[<?= $i ?>][blackout_dates]" placeholder="YYYY-MM-DD หนึ่งวันต่อบรรทัด"><?= e(implode("\n",json_decode($dep['blackout_dates'] ?? '[]',true) ?: [])) ?></textarea><small>ทริปต้องไม่คร่อมวันงดเดินทาง</small></label>
  <h4>ราคาต่อคนตามระดับและขนาดกรุ๊ป</h4><div class="private-rates"><?php $rates=json_decode($dep['private_rates'] ?? '[]',true) ?: [[]]; foreach ($rates as $j=>$rate) load_view('admin/private_rate',['i'=>$i,'j'=>$j,'rate'=>$rate]); ?></div>
  <button type="button" class="outline-link" data-rate-add>＋ เพิ่มระดับ / ช่วงจำนวนคน</button>

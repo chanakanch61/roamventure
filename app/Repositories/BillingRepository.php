@@ -191,24 +191,26 @@ class BillingRepository
         return $this->finish();
     }
 
-    public function submit_slip($id, $paymentId, $fields, $file)
+    /** The channel a payment must have used when its account offered only one, else null for the admin to pick. */
+    public function only_channel(array $a)
+    {
+        $bank = ! empty($a['bank_name']) && ! empty($a['bank_account']);
+        $promptpay = ! empty($a['promptpay_number']) || ! empty($a['payment_qr']);
+
+        return $bank === $promptpay ? null : ($bank ? 'bank' : 'promptpay');
+    }
+
+    public function submit_slip($id, $paymentId, $amount, $file)
     {
         $b = $this->lock($id);
         $p = DB::table('payments')->where('booking_id', $id)->where('id', $paymentId)->first();
         if (! $b || $b['status'] !== 'confirmed' || ! $p || $p['status'] !== 'awaiting_upload') {
             return $this->fail('รายการนี้ไม่เปิดรับสลิปหรือส่งสลิปแล้ว');
         }
-        // Allow proof of an on-time transfer to be uploaded after expiry for manual review.
-        $time = DateTime::createFromFormat('!Y-m-d\TH:i', $fields['transferred_at']);
-        if (! $time || $time->format('Y-m-d\TH:i') !== $fields['transferred_at'] || $time->getTimestamp() > time() + 300 || $time->format('Y-m-d H:i:59') < $p['created_at'] || $time->format('Y-m-d H:i:s') > $p['expires_at']) {
-            return $this->fail('วันเวลาโอนต้องอยู่ในช่วงรายการชำระและไม่เกินเวลาปัจจุบัน');
-        }
-        if (! preg_match('/^\d{1,12}(\.\d{1,2})?$/D', $fields['reported_amount']) || $this->cents($fields['reported_amount']) <= 0 || $this->cents($fields['reported_amount']) > $this->state($b)['remaining']) {
+        // The customer sends only the amount and the slip. Uploads after expiry are still accepted:
+        // the admin reads the transfer time and channel off the slip when approving (see review()).
+        if (! preg_match('/^\d{1,12}(\.\d{1,2})?$/D', $amount) || $this->cents($amount) <= 0 || $this->cents($amount) > $this->state($b)['remaining']) {
             return $this->fail('ยอดโอนต้องมากกว่า 0 และไม่เกินยอดคงเหลือ หากโอนเกินกรุณาติดต่อทีมงาน');
-        }
-        $a = json_decode($p['account_snapshot'], true);
-        if (! in_array($fields['channel'], ['bank', 'promptpay'], true) || ($fields['channel'] === 'bank' && (empty($a['bank_name']) || empty($a['bank_account']))) || ($fields['channel'] === 'promptpay' && empty($a['promptpay_number']) && empty($a['payment_qr']))) {
-            return $this->fail('กรุณาเลือกช่องทางโอนที่เปิดให้บริการ');
         }
         if (DB::table('payments')->where('slip_hash', $file['hash'])->whereIn('status', ['pending', 'approved'])->count()) {
             return $this->fail('ไฟล์สลิปนี้อยู่ระหว่างตรวจสอบหรือใช้ยืนยันแล้ว กรุณาติดต่อทีมงาน');
@@ -218,13 +220,14 @@ class BillingRepository
         if ($claimed !== 1) {
             return $this->fail('สลิปนี้มีรายการอื่นรับไว้แล้ว กรุณาติดต่อทีมงาน');
         }
-        $this->soft(fn () => DB::table('payments')->where('id', $p['id'])->update(['status' => 'pending', 'reported_amount' => $fields['reported_amount'], 'transferred_at' => $time->format('Y-m-d H:i:s'), 'channel' => $fields['channel'], 'submitted_at' => date('Y-m-d H:i:s'), 'slip_path' => $file['path'], 'slip_hash' => $file['hash']]));
+        $this->soft(fn () => DB::table('payments')->where('id', $p['id'])->update(['status' => 'pending', 'reported_amount' => $amount, 'transferred_at' => null, 'channel' => $this->only_channel(json_decode($p['account_snapshot'], true) ?: []), 'submitted_at' => date('Y-m-d H:i:s'), 'slip_path' => $file['path'], 'slip_hash' => $file['hash']]));
         $this->event($id, 'ได้รับสลิปแล้ว รอทีมงานตรวจสอบ');
 
         return $this->finish();
     }
 
-    public function review($id, $paymentId, $decision, $note, $ack = false)
+    /** $transfer holds the channel and transfer time ('Y-m-d\TH:i') the admin read off the slip; required to approve. */
+    public function review($id, $paymentId, $decision, $note, $ack = false, array $transfer = [])
     {
         $b = $this->lock($id);
         $p = DB::table('payments')->where('booking_id', $id)->where('id', $paymentId)->first();
@@ -248,8 +251,19 @@ class BillingRepository
             if ($this->cents($p['reported_amount']) !== $this->cents($p['expected_amount']) && ! $ack) {
                 return $this->fail('ยอดโอนไม่ตรงยอดเรียกเก็บ กรุณายืนยันว่าตรวจสอบยอดจริงแล้ว');
             }
+            $channel = $transfer['channel'] ?? '';
+            if (! in_array($channel, ['bank', 'promptpay'], true)) {
+                return $this->fail('เลือกช่องทางที่ลูกค้าโอนตามสลิป');
+            }
+            $input = $transfer['transferred_at'] ?? '';
+            $time = DateTime::createFromFormat('!Y-m-d\TH:i', $input);
+            if (! $time || $time->format('Y-m-d\TH:i') !== $input || $time->getTimestamp() > time() + 300) {
+                return $this->fail('ระบุวันเวลาโอนตามสลิป และต้องไม่เกินเวลาปัจจุบัน');
+            }
+            $data['channel'] = $channel;
+            $data['transferred_at'] = $time->format('Y-m-d H:i:s');
             $data['receipt_reference'] = 'RCT-'.date('Ymd').'-'.str_pad($p['id'], 6, '0', STR_PAD_LEFT);
-            $data['receipt_snapshot'] = json_encode(['invoice' => json_decode($s['invoice']['snapshot'], true), 'invoice_reference' => $s['invoice']['reference'], 'payment_reference' => $p['reference'], 'amount' => $p['reported_amount'], 'channel' => $p['channel'], 'transferred_at' => $p['transferred_at'], 'issued_at' => $now], JSON_UNESCAPED_UNICODE);
+            $data['receipt_snapshot'] = json_encode(['invoice' => json_decode($s['invoice']['snapshot'], true), 'invoice_reference' => $s['invoice']['reference'], 'payment_reference' => $p['reference'], 'amount' => $p['reported_amount'], 'channel' => $data['channel'], 'transferred_at' => $data['transferred_at'], 'issued_at' => $now], JSON_UNESCAPED_UNICODE);
         }
         $this->soft(fn () => DB::table('payments')->where('id', $p['id'])->update($data));
         if ($decision === 'reject') {

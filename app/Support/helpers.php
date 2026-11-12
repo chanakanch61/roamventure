@@ -207,6 +207,13 @@ function private_lowest_rate($periods)
 
     return $lowest;
 }
+// Whether a tour's listed private periods include an anytime one, and how many dated periods it has besides.
+function private_period_mix($periods)
+{
+    $anytime = count(array_filter($periods, [\App\Support\PrivatePackage::class, 'anytime']));
+
+    return ['anytime' => $anytime > 0, 'dated' => count($periods) - $anytime];
+}
 function text_lines($text)
 {
     $lines = [];

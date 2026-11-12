@@ -6,19 +6,19 @@
  const fields=['title','flight_included','days','nights','summary','highlights','hotel_status','hotel_details','transport_status','transport_details','guide_status','guide_details','photographer_status','photographer_details','inclusions','exclusions','payment_terms','cancellation_terms','know_before_go','terms','deposit_per_person'];
  const dayFields=['title','description','hotel','breakfast','lunch','dinner'];
  const flightFields=['leg_type','day_number','airline','flight_number','from_airport','to_airport','depart_time','arrive_time','arrive_next_day','duration','included'];
- const depFields=['start_date','end_date','capacity','price_per_person','single_supplement','deposit_cutoff_days','balance_due_days','lead_days','blackout_dates'];
+ const depFields=['start_date','end_date','capacity','price_per_person','single_supplement','deposit_cutoff_days','balance_due_days','blackout_dates'];
  const typeSelect=$('#tour-import-type'), programType=$('#program-type');
  const typeLabels={fixed:'ทัวร์ปกติ',private:'แพ็คเกจทัวร์ส่วนตัว'};
  const levels=[...$('#departure-template').content.querySelectorAll('[name$="[level_id]"] option')].filter(o=>o.value).map(o=>o.textContent);
  function refreshPrompt() {
  const type=typeSelect.value, isPrivate=type==='private';
- const departureFields=depFields.filter(k=>isPrivate ? !['capacity','price_per_person'].includes(k) : !['lead_days','blackout_dates'].includes(k));
+ const departureFields=depFields.filter(k=>isPrivate ? !['capacity','price_per_person'].includes(k) : !['blackout_dates'].includes(k));
  const schema={schema_version:1,program_type:type,...Object.fromEntries(fields.map(k=>[k,null])),review_notes:[],destinations:[{zone:null,country:null,route:null}],...(isPrivate?{}:{flights:[Object.fromEntries(flightFields.map(k=>[k,null]))]}),itinerary:[{...Object.fromEntries(dayFields.map(k=>[k,null])),hotel_options:[]}],departures:[{...Object.fromEntries(departureFields.map(k=>[k,null])),deposit_enabled:null,...(isPrivate?{rates:[{level:null,min:null,max:null,price:null,details:null}]}:{})}]};
  const pricing=isPrivate
-  ? 'แพ็คเกจทัวร์ส่วนตัว: departures แต่ละแถวคือช่วงวันที่เปิดให้ลูกค้าเลือกเดินทาง start_date คือวันแรกที่เริ่มเดินทางได้ end_date คือวันสุดท้ายที่ต้องเดินทางกลับถึง ไม่ใช่วันไป/กลับของรอบทัวร์ตายตัว ห้ามแปลงรอบทัวร์ปกติเป็นช่วงเปิดขายเอง หากเอกสารไม่ระบุช่วงให้เว้น null\nราคาใช้ rates ทุกระดับบริการและทุกช่วงจำนวนคน level คือชื่อระดับ min/max คือจำนวนคนขั้นต่ำ/สูงสุด price คือราคาต่อคนหน่วยบาท details คือบริการของเรตนั้น ห้ามใช้ราคารวมกรุ๊ปแทนราคาต่อคน หาก PDF มีเพียงราคารวมให้เก็บข้อความใน terms และเว้น price\nlead_days คือวันจองล่วงหน้า blackout_dates คือวันงดเดินทางรูปแบบ YYYY-MM-DD หนึ่งวันต่อบรรทัด ห้ามกำหนดที่นั่งหรือราคาเดียวต่อรอบ Standard กับ Economy คือระดับเดียวกัน ให้ใช้ชื่อ Economy ในทุกช่อง หากระดับอื่นจับคู่ไม่ได้ให้ใช้ชื่อจาก PDF'
+  ? 'แพ็คเกจทัวร์ส่วนตัว: departures แต่ละแถวคือช่วงวันที่เปิดให้ลูกค้าเลือกเดินทาง start_date คือวันแรกที่เริ่มเดินทางได้ end_date คือวันสุดท้ายที่ต้องเดินทางกลับถึง ไม่ใช่วันไป/กลับของรอบทัวร์ตายตัว ห้ามแปลงรอบทัวร์ปกติเป็นช่วงเปิดขายเอง หากเอกสารไม่ระบุช่วงให้เว้น null\nราคาใช้ rates ทุกระดับบริการและทุกช่วงจำนวนคน level คือชื่อระดับ min/max คือจำนวนคนขั้นต่ำ/สูงสุด price คือราคาต่อคนหน่วยบาท details คือบริการของเรตนั้น ห้ามใช้ราคารวมกรุ๊ปแทนราคาต่อคน หาก PDF มีเพียงราคารวมให้เก็บข้อความใน terms และเว้น price\nblackout_dates คือวันงดเดินทางรูปแบบ YYYY-MM-DD หนึ่งวันต่อบรรทัด ห้ามกำหนดที่นั่งหรือราคาเดียวต่อรอบ Standard กับ Economy คือระดับเดียวกัน ให้ใช้ชื่อ Economy ในทุกช่อง หากระดับอื่นจับคู่ไม่ได้ให้ใช้ชื่อจาก PDF'
   : 'ทัวร์ปกติ: departures แต่ละแถวคือรอบเดินทาง start_date คือวันไป end_date คือวันกลับของรอบนั้น ใส่ทุกรอบตาม PDF\ncapacity คือจำนวนที่นั่งทั้งหมดของรอบ ไม่ใช่จำนวนที่นั่งคงเหลือ price_per_person คือราคาผู้ใหญ่ปกติต่อคนหน่วยบาท ไม่ใช้ราคาเด็ก/โปรโมชั่นแทน ไม่ใช้ rates หรือช่วงราคาตามขนาดกรุ๊ป';
  $('#tour-import-type-help').textContent=isPrivate
-  ? 'แพ็คเกจทัวร์ส่วนตัว: ช่วงวันที่เลือกเดินทางได้ · วันงดเดินทาง · จองล่วงหน้า · ราคาตามระดับบริการและจำนวนคน'
+  ? 'แพ็คเกจทัวร์ส่วนตัว: ช่วงวันที่เลือกเดินทางได้ · วันงดเดินทาง · ราคาตามระดับบริการและจำนวนคน'
   : 'ทัวร์ปกติ: วันไป–กลับแน่นอนในแต่ละรอบ · จำนวนที่นั่ง · ราคาต่อคนและค่าพักเดี่ยว';
  $('#copy-tour-prompt').textContent='คัดลอก Prompt · '+typeLabels[type];
  $('#prompt-status').textContent='';
@@ -77,12 +77,12 @@ ${isPrivate?'ระดับบริการในระบบ: '+JSON.stringi
   data.destinations.forEach((d,i)=>{scalar(d,['zone','country','route'],'จุดหมาย '+(i+1)+' ');unknown(d,['zone','country','route'],'destinations.');});
   data.itinerary.forEach(d=>{scalar(d,dayFields,'itinerary.');unknown(d,[...dayFields,'hotel_options'],'itinerary.');if(d.hotel_options!=null && (!Array.isArray(d.hotel_options) || !d.hotel_options.every(name=>typeof name==='string'))) throw Error('hotel_options ต้องเป็นรายการชื่อโรงแรม');for(const key of ['breakfast','lunch','dinner']) if(!blank(d[key]) && typeof d[key]!=='boolean') throw Error('มื้ออาหารต้องเป็น true, false หรือ null');});
   data.departures.forEach(d=>{
-   scalar(d,depFields,'departures.');unknown(d,[...depFields,'deposit_enabled','rates'],'departures.');
+   scalar(d,depFields,'departures.');unknown(d,[...depFields,'deposit_enabled','rates','lead_days'],'departures.');
    if(!blank(d.deposit_enabled) && typeof d.deposit_enabled!=='boolean') throw Error('deposit_enabled ต้องเป็น true, false หรือ null');
    if(d.rates==null) d.rates=[];
    if(!Array.isArray(d.rates) || d.rates.length>30 || !d.rates.every(obj)) throw Error('rates ต้องเป็นรายการ object ไม่เกิน 30 แถว');
    if(data.program_type==='fixed' && d.rates.length) throw Error('ทัวร์ปกติใช้ capacity และ price_per_person ต่อรอบ ไม่ใช้ rates ของแพ็คเกจส่วนตัว');
-   if(data.program_type==='fixed' && (!blank(d.lead_days) || !blank(d.blackout_dates))) throw Error('ทัวร์ปกติใช้วันไป–กลับของแต่ละรอบ ไม่ใช้ lead_days หรือ blackout_dates ของแพ็คเกจส่วนตัว');
+   if(data.program_type==='fixed' && !blank(d.blackout_dates)) throw Error('ทัวร์ปกติใช้วันไป–กลับของแต่ละรอบ ไม่ใช้ blackout_dates ของแพ็คเกจส่วนตัว');
    if(data.program_type==='private' && (!blank(d.capacity) || !blank(d.price_per_person))) throw Error('แพ็คเกจส่วนตัวใช้ rates ตามระดับบริการและจำนวนคน กรุณานำ capacity และ price_per_person ออกจาก JSON');
    d.rates.forEach(r=>{scalar(r,['level','min','max','price','details'],'rates.');unknown(r,['level','min','max','price','details'],'rates.');});
   });

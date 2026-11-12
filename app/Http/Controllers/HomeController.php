@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\CustomerMail;
+use App\Support\DiscordNotify;
 use App\Support\PrivatePackage;
+use App\Support\Recaptcha;
 use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
@@ -187,7 +190,7 @@ class HomeController extends Controller
     {
         $this->post_only();
         $departureId = request()->post('departure_id');
-        foreach (['customer_name', 'phone', 'email', 'line_id', 'note', 'consent', 'website', 'room_type', 'ticket_help'] as $field) {
+        foreach (['customer_name', 'phone', 'email', 'line_id', 'note', 'consent', 'website', 'room_type', 'ticket_help', 'recaptcha_token'] as $field) {
             if (is_array(request()->post($field))) {
                 show_error('ข้อมูลแบบฟอร์มไม่ถูกต้อง', 400);
             }
@@ -232,6 +235,10 @@ class HomeController extends Controller
         if (session('last_request_at') > time() - 30) {
             $error = 'กรุณารอ 30 วินาทีก่อนส่งคำขอใหม่';
         }
+        // Checked last so Google is only asked about requests that would otherwise go through.
+        if (! $error && ! app(Recaptcha::class)->passes(request()->post('recaptcha_token'), 'booking')) {
+            $error = 'ระบบตรวจสอบความปลอดภัยไม่ผ่าน กรุณาลองส่งอีกครั้ง หรือติดต่อทีมงานทาง LINE';
+        }
         if ($error) {
             session()->flash('error', $error);
             session()->flash('booking_old', array_intersect_key(request()->post(), array_flip(['customer_name', 'phone', 'email', 'line_id', 'note', 'ticket_help'])));
@@ -246,6 +253,8 @@ class HomeController extends Controller
             session()->flash('error', $data);
             redirect_to(base_url().('tours/'.$slug.'#booking'));
         }
+        app(DiscordNotify::class)->new_booking($data);
+        app(CustomerMail::class)->booking_received($data, $this->settings);
         $ref = $data['reference'];
         session()->flash('tracking_lead', ['event_id' => bin2hex(random_bytes(16)), 'currency' => 'THB', 'value' => (float) $data['total_price'], 'items' => [['item_id' => $rate['code'], 'item_name' => $rate['title'], 'quantity' => $count]]]);
         session()->put(['last_booking' => $ref, 'last_request_at' => time(), 'request_token' => bin2hex(random_bytes(24))]);

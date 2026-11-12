@@ -80,3 +80,49 @@
  .invoice-document .invoice-cancelled{margin:8px 0 0;padding:6px 10px;font-size:10px}
  .invoice-header,.invoice-parties,.invoice-items tr,.invoice-footer{break-inside:avoid}
 }
+
+/* Payment flow inside the Payment Summary card (partials/booking_payment). Neutrals mix from currentColor so the light and dark site themes both work. */
+.payment-summary .pay-flow{--pay-line:color-mix(in srgb,currentColor 20%,transparent);--pay-soft:color-mix(in srgb,currentColor 6%,transparent);margin-top:12px}
+.pay-flow>summary{list-style:none;cursor:pointer;gap:16px}.pay-flow>summary::-webkit-details-marker{display:none}
+.pay-flow .pay-flow-opened,.pay-flow[open] .pay-flow-closed{display:none}.pay-flow[open] .pay-flow-opened,.pay-flow .pay-flow-closed{display:inline-flex;align-items:center;gap:16px}
+.public-dark .billing-page .pay-flow[open]>summary,.pay-flow[open]>summary{background:transparent;color:inherit;border-color:var(--pay-line);padding-block:11px;font-weight:600;transform:none}
+.pay-flow-body{display:grid;gap:18px;margin-top:20px;padding-top:20px;border-top:1px solid var(--pay-line)}
+.pay-flow-body>*,.pay-flow-body form>*{min-width:0}.pay-flow-body .notice{margin:0}
+.pay-steps{list-style:none;display:flex;gap:6px;margin:0;padding:0}
+.pay-steps li{flex:1;min-width:0;display:grid;gap:6px;font-size:11px;opacity:.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pay-steps li:before{content:'';height:3px;border-radius:3px;background:currentColor;opacity:.35}
+.pay-flow[data-step=transfer] .pay-steps [data-step=choose],.pay-flow[data-step=slip] .pay-steps :is([data-step=choose],[data-step=transfer]){opacity:.75}
+.pay-flow[data-step=choose] .pay-steps [data-step=choose],.pay-flow[data-step=transfer] .pay-steps [data-step=transfer],.pay-flow[data-step=slip] .pay-steps [data-step=slip]{opacity:1;font-weight:700}
+.pay-steps li[data-step]:before{transition:opacity .2s}.pay-flow[data-step=choose] .pay-steps [data-step=choose]:before,.pay-flow[data-step=transfer] .pay-steps [data-step=transfer]:before,.pay-flow[data-step=slip] .pay-steps [data-step=slip]:before{opacity:1}
+.pay-choices{display:grid;gap:10px}
+.pay-choice{display:flex;gap:14px;align-items:flex-start;padding:16px;border:1px solid var(--pay-line);border-radius:14px;cursor:pointer;transition:border-color .15s,background .15s}
+.pay-choice:hover{border-color:color-mix(in srgb,currentColor 45%,transparent)}.pay-choice:has(input:checked){border-color:currentColor;background:var(--pay-soft)}
+.billing-page .pay-choice input{width:16px;height:16px;margin:4px 0 0;flex:none}
+.pay-choice>span{display:grid;gap:2px;min-width:0}.pay-choice strong{font-size:20px;font-variant-numeric:tabular-nums}.pay-choice small{font-size:12px;opacity:.7}
+.pay-choices .btn{margin-top:6px}
+.pay-transfer,.pay-slip{display:grid;gap:16px}.pay-slip{margin:0}
+.pay-flow.is-enhanced[data-step=transfer] .pay-slip,.pay-flow.is-enhanced[data-step=slip] .pay-transfer,.pay-flow:not(.is-enhanced) .pay-back{display:none}
+.pay-amount{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px}
+.pay-amount>div{display:grid}.pay-amount strong{font-size:30px;line-height:1.2;letter-spacing:-.6px;font-variant-numeric:tabular-nums}.pay-amount small{font-size:12px;opacity:.7;overflow-wrap:anywhere}
+.pay-deadline{font-size:12px;padding:4px 12px;border:1px solid var(--pay-line);border-radius:100px;white-space:nowrap}
+.pay-account{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;padding:18px;background:var(--pay-soft);border-radius:14px}
+.pay-account dl{display:grid;gap:12px;margin:0}.pay-account dt{font-size:11px;opacity:.65}.pay-account dd{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:2px 0 0;overflow-wrap:anywhere}
+.pay-account .account-number{font-size:19px}
+.pay-copy{padding:2px 10px;font:inherit;font-size:11px;color:inherit;background:none;border:1px solid var(--pay-line);border-radius:100px;cursor:pointer}.pay-copy.is-copied{border-color:currentColor}
+.pay-qr{display:block;width:150px;max-width:100%;height:auto;padding:8px;background:#ffffff;border-radius:10px}
+.pay-flow .text-button{justify-self:center;display:inline-flex;align-items:center;gap:6px;padding:4px 0;font:inherit;font-size:13px;color:inherit;opacity:.75;background:none;border:0;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.pay-flow .text-button:hover{opacity:1}.pay-flow .text-button .material-icons{font-size:16px}
+.pay-cancel{display:grid}
+.pay-drop{position:relative;display:flex;align-items:center;gap:14px;padding:16px;border:1.5px dashed color-mix(in srgb,currentColor 35%,transparent);border-radius:14px;cursor:pointer;transition:border-color .15s,background .15s}
+.pay-drop:hover,.pay-drop.is-over{border-color:currentColor;background:var(--pay-soft)}.pay-drop:focus-within{outline:2px solid currentColor;outline-offset:2px}
+.pay-drop.is-invalid{border-color:#d46a6a}
+.billing-page .pay-drop input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.pay-drop-preview{display:grid;place-items:center;flex:none;width:60px;height:80px;border-radius:8px;background:var(--pay-soft);overflow:hidden}.pay-drop-preview img{width:100%;height:100%;object-fit:cover}
+.pay-drop b{display:block;font-size:13px}.pay-drop small{font-size:11.5px;opacity:.65}
+.pay-done{display:grid;gap:16px;justify-items:start}
+.pay-done-head{display:flex;align-items:center;gap:14px}.pay-done-head b{font-size:17px}.pay-done-head p{margin:0}
+.pay-check{display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:50%;background:var(--pay-soft);border:1px solid var(--pay-line)}
+.pay-slip-thumb{display:flex;align-items:center;gap:14px;font-size:13px;font-weight:600;color:inherit}.pay-slip-thumb img{width:72px;height:96px;object-fit:cover;border-radius:8px;border:1px solid var(--pay-line)}
+.pay-slip-thumb span{display:inline-flex;align-items:center;gap:6px}
+@media(max-width:520px){.pay-account{grid-template-columns:minmax(0,1fr)}.pay-qr{justify-self:center}.pay-amount strong{font-size:26px}}
+@media(prefers-reduced-motion:reduce){.pay-choice,.pay-drop{transition:none}}

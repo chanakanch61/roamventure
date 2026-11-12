@@ -239,8 +239,13 @@ if (departures) {
   return rate ? {...d, price_per_person:rate.price, start_date:privateDate.value, end_date:addDays(privateDate.value,Number(d.days)-1), packageRate:rate} : undefined;
  };
  // The calendar minimum is the first bookable date, not today's base date.
+ // A dated period owns every trip that fits inside it; the anytime period only takes the rest.
  function periodFor(start) {
-  return data.find(d=>{const end=addDays(start,Number(d.days)-1); return start && start>=d.start_date && end<=d.end_date && start>=addDays(privateDate.dataset.today,Number(d.lead_days)) && !JSON.parse(d.blackout_dates || '[]').some(x=>x>=start && x<=end);});
+  if (!start || start<privateDate.dataset.earliest) return undefined;
+  const fits=d=>start>=d.start_date && addDays(start,Number(d.days)-1)<=d.end_date;
+  const d=data.find(d=>!Number(d.anytime) && fits(d)) || data.find(d=>Number(d.anytime) && fits(d));
+  const end=d && addDays(start,Number(d.days)-1);
+  return d && !JSON.parse(d.blackout_dates || '[]').some(x=>x>=start && x<=end) ? d : undefined;
  }
  const calendar=document.querySelector('#private-calendar');
  const thaiDate=new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
@@ -279,13 +284,16 @@ if (departures) {
    const b=document.createElement('button'); b.type='button'; b.disabled=!d.price; b.dataset.date=d.iso;
    b.classList.toggle('is-start',d.iso===start); b.classList.toggle('is-trip',Boolean(tripEnd) && d.iso>start && d.iso<=tripEnd);
    b.setAttribute('aria-pressed',String(d.iso===start));
-   b.setAttribute('aria-label',thaiFullDate.format(utcDate(d.iso))+(d.price ? ' ราคา '+format(d.price)+' ต่อคน' : ' จองไม่ได้'));
+   b.setAttribute('aria-label',thaiFullDate.format(utcDate(d.iso))+(d.price ? ' เริ่มเดินทางวันนี้ ราคา '+format(d.price)+' ต่อคนทั้งทริป' : ' จองไม่ได้'));
    const number=document.createElement('span'); number.textContent=d.day; b.append(number);
-   if (d.price && prices.length>1) { const price=document.createElement('small'); price.textContent=shortPrice(d.price); b.append(price); }
+   // Days inside the chosen trip show only the range; their own start prices read like a nightly rate.
+   if (d.price && prices.length>1 && !b.classList.contains('is-trip')) { const price=document.createElement('small'); price.textContent=shortPrice(d.price); b.append(price); }
    grid.append(b);
   });
   const note=document.createElement('small'); note.className='trip-calendar-note';
-  note.textContent=!prices.length ? 'เดือนนี้ไม่มีวันที่จองได้สำหรับระดับและจำนวนคนนี้' : prices.length===1 ? 'วันที่เลือกได้ราคา '+format(prices[0])+' ต่อคน' : 'ราคาต่อคนตามวันเริ่มเดินทาง';
+  const tripDays=Number(periodFor(start || days.find(d=>d.price)?.iso)?.days || 0);
+  const whole=tripDays ? 'ทั้งทริป '+tripDays+' วัน' : 'ทั้งทริป';
+  note.textContent=!prices.length ? 'เดือนนี้ไม่มีวันที่จองได้สำหรับระดับและจำนวนคนนี้' : prices.length===1 ? 'ราคา '+format(prices[0])+' ต่อคน '+whole+' (ไม่ใช่ราคาต่อวัน)' : 'ราคาใต้วันที่ = ราคาต่อคน '+whole+' เมื่อเริ่มเดินทางวันนั้น (ไม่ใช่ราคาต่อวัน)';
   calendar.append(head,grid,note);
   if (focusSelector) calendar.querySelector(focusSelector)?.focus();
  }
@@ -323,8 +331,8 @@ if (departures) {
   countInput.disabled=!countOpen; countInput.min=countOpen ? Math.min(...levelRates.map(r=>r.min)) : 1; countInput.max=d ? d.capacity : countOpen ? Math.max(...data.map(x=>Number(x.capacity))) : 500;
   if(countOpen && Number(countInput.value)<Number(countInput.min)) countInput.value=countInput.min;
   if(quick && countOpen && Number(countInput.value)>Number(countInput.max)) countInput.value=countInput.max;
-  privateDate.setCustomValidity(d || !start ? '' : 'วันที่นี้ไม่เปิดรับจอง กรุณาตรวจช่วงวัน วันงดเดินทาง และระยะจองล่วงหน้า');
-  document.querySelector('#private-date-help').textContent=!start ? privateDate.dataset.emptyHint : d && calendar ? 'เดินทาง '+thaiDate.format(utcDate(start))+' – '+thaiDate.format(utcDate(addDays(start,Number(d.days)-1)))+' · รอทีมงานยืนยันบริการ' : d ? 'วันกลับ '+addDays(start,Number(d.days)-1)+' · จองล่วงหน้าอย่างน้อย '+Number(d.lead_days)+' วัน · รอทีมงานยืนยันบริการ' : 'วันที่นี้ไม่เปิดรับจอง ตรวจช่วงวัน วันงดเดินทาง และระยะจองล่วงหน้า';
+  privateDate.setCustomValidity(d || !start ? '' : 'วันที่นี้ไม่เปิดรับจอง กรุณาตรวจช่วงวัน วันงดเดินทาง และเวลาตัดรอบการจอง');
+  document.querySelector('#private-date-help').textContent=!start ? privateDate.dataset.emptyHint : d && calendar ? 'เดินทาง '+thaiDate.format(utcDate(start))+' – '+thaiDate.format(utcDate(addDays(start,Number(d.days)-1)))+' · รอทีมงานยืนยันบริการ' : d ? 'วันกลับ '+addDays(start,Number(d.days)-1)+' · รอทีมงานยืนยันบริการ' : 'วันที่นี้ไม่เปิดรับจอง ตรวจช่วงวัน วันงดเดินทาง และเวลาตัดรอบการจอง';
   updatePrice();
  }
  if(privateDate){ privateDate.addEventListener('input',selectPrivateDate); privateDate.addEventListener('change',selectPrivateDate); privateLevel.addEventListener('change',updatePrice); }
@@ -394,12 +402,13 @@ if (departures) {
   const baseTotal = dep && validCount ? cents(dep.price_per_person) * count : 0;
   const supplementTotal = dep && validNumbers && singleCount && dep.single_supplement !== null ? cents(dep.single_supplement) * singleCount : 0;
   document.querySelector('#price-person').textContent = dep ? format(dep.price_per_person) : preview ? 'เริ่มต้น ' + format(preview.price) : '—';
-  document.querySelector('#base-count').textContent = validCount ? count + ' คน' : '';
+  document.querySelector('#base-count').textContent = validCount ? count + ' คน' + (dep ? ' × ' + format(dep.price_per_person) : '') : '';
   document.querySelector('#base-total').textContent = dep && validCount ? format(baseTotal / 100) : preview && validCount ? 'เริ่มต้น ' + format(cents(preview.price) * count / 100) : '—';
-  document.querySelector('#supplement-count').textContent = validNumbers && singleCount ? singleCount + ' ห้อง' : '';
+  document.querySelector('#supplement-count').textContent = validNumbers && singleCount ? singleCount + ' ห้อง' + (dep?.single_supplement != null ? ' × ' + format(dep.single_supplement) : '') : '';
   document.querySelector('#supplement-total').textContent = dep && validNumbers ? format(supplementTotal / 100) : '—';
   document.querySelector('#price-total').textContent = dep && validCount && validRoom ? format((baseTotal + supplementTotal) / 100) : '—';
   document.querySelector('.booking-total').classList.toggle('has-supplement', supplementTotal > 0);
+  document.querySelector('.booking-total').classList.toggle('has-breakdown', Boolean(dep && validCount));
   document.querySelector('#group-capacity').textContent = dep ? dep.capacity + ' คน' : '—';
   document.querySelector('#seats-available').textContent = dep ? dep.seats_available + ' ที่นั่ง' : '—';
   document.querySelector('#departure-quote').value = dep?.quote || '';
@@ -499,7 +508,23 @@ if (departures) {
  // Recompute controls on history restoration, including after a submitted form.
  window.addEventListener('pageshow', () => roomsTouched = rooms.some(r => Number(r.input.value) > 0));
  window.addEventListener('pageshow', () => privateDate ? selectPrivateDate() : dateSelect.dispatchEvent(new Event('change')));
- document.querySelector('#booking-form').addEventListener('submit', function () { const button = this.querySelector('button[type="submit"]'); button.disabled = true; button.textContent = button.dataset.busy || 'กำลังส่งคำขอ…'; });
+ const bookingForm = document.querySelector('#booking-form');
+ bookingForm.addEventListener('submit', function (event) {
+  const button = this.querySelector('button[type="submit"]');
+  const siteKey = this.dataset.recaptcha;
+  if (siteKey) {
+   // reCAPTCHA v3 tokens last two minutes, so one is fetched at send time and the form is then sent natively.
+   // Without a token (script blocked or failed) the form still goes: the server turns it away with a message and keeps the typed details.
+   event.preventDefault();
+   if (this.dataset.sending) return;
+   this.dataset.sending = '1';
+   const send = token => { this.elements.recaptcha_token.value = typeof token === 'string' ? token : ''; this.submit(); };
+   if (window.grecaptcha) grecaptcha.ready(() => grecaptcha.execute(siteKey, {action: 'booking'}).then(send, () => send('')));
+   else send('');
+  }
+  button.disabled = true; button.textContent = button.dataset.busy || 'กำลังส่งคำขอ…';
+ });
+ window.addEventListener('pageshow', () => delete bookingForm.dataset.sending);
 }
 const destinationPicker = document.querySelector('#tour-destination-picker');
 if (destinationPicker) {
@@ -564,6 +589,13 @@ if (editor) {
   }
  });
  editor.addEventListener('submit', () => { reorderInputs('.day-item', 'itinerary'); reorderInputs('.gallery-edit', 'images'); });
+ // Ctrl/Cmd+S saves the program from anywhere on the page (runs validation + submit handlers).
+ document.addEventListener('keydown', event => {
+  if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 's') {
+   event.preventDefault();
+   editor.requestSubmit(editor.querySelector('.editor-quick-save') || undefined);
+  }
+ });
 }
 
 document.querySelectorAll('.vehicle-edit').forEach(vehicleEdit => {
@@ -673,8 +705,19 @@ if (editor) {
   editor.querySelectorAll('[data-private-only], [data-fixed-only]').forEach(el=>{const active=el.hasAttribute('data-private-only')===privateMode;el.hidden=!active;el.querySelectorAll('input,select,textarea,button').forEach(input=>input.disabled=!active);});
   editor.querySelectorAll('[data-start-label]').forEach(el=>el.textContent=privateMode ? 'เดินทางได้ตั้งแต่' : 'วันเริ่มเดินทาง');
   editor.querySelectorAll('[data-end-label]').forEach(el=>el.textContent=privateMode ? 'วันกลับต้องไม่เกิน' : 'วันกลับ');
+  refreshDepartureModes();
+ }
+ // A private period open every day has no dates to fill; a dated one has no booking horizon.
+ function refreshDepartureModes(){
+  const privateMode=programType.value==='private';
+  editor.querySelectorAll('.departure-item').forEach(item=>{
+   const anytime=privateMode && Boolean(item.querySelector('[data-anytime-toggle][value="1"]')?.checked);
+   item.querySelectorAll('[data-range-fields]').forEach(el=>{el.hidden=anytime;el.querySelectorAll('input').forEach(input=>input.disabled=anytime);});
+   item.querySelectorAll('[data-anytime-fields]').forEach(el=>{el.hidden=!anytime;el.querySelectorAll('select').forEach(select=>select.disabled=!anytime);});
+  });
  }
  programType.addEventListener('change',refreshPrivate);
+ editor.querySelector('#departure-list').addEventListener('change',event=>{if(event.target.matches('[data-anytime-toggle]'))refreshDepartureModes();});
  const flightSetList=editor.querySelector('#flight-set-list'), flightIncluded=editor.querySelector('[name=flight_included]');
  let flightCounter=Date.now()%1000000000;
  function syncFlightSets(){

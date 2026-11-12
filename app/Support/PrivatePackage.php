@@ -7,6 +7,43 @@ use DateTime;
 
 class PrivatePackage
 {
+    // Placeholder dates stored on an "anytime" period, so date filters in SQL keep it listed.
+    public const ANYTIME_START = '1000-01-01';
+
+    public const ANYTIME_END = '9999-12-31';
+
+    public const ADVANCE_MONTHS = [6, 12, 18, 24];
+
+    public static function anytime($dep)
+    {
+        return ! empty($dep['anytime']);
+    }
+
+    // First and last calendar day a period covers. An anytime period runs from today to its booking horizon.
+    public static function window($dep)
+    {
+        if (! self::anytime($dep)) {
+            return [$dep['start_date'], $dep['end_date']];
+        }
+        $today = date('Y-m-d');
+        $months = (int) ($dep['advance_months'] ?? 0) ?: 12;
+
+        return [$today, date('Y-m-d', strtotime($today.' +'.$months.' months'))];
+    }
+
+    // Gives an anytime period today's real dates. $covered lists [start, end] of the tour's active dated
+    // periods: a trip that fits inside one of them is booked there, at that period's price, instead.
+    public static function resolve($dep, $covered = [])
+    {
+        if (! self::anytime($dep)) {
+            return $dep;
+        }
+        [$dep['start_date'], $dep['end_date']] = self::window($dep);
+        $dep['covered'] = array_values($covered);
+
+        return $dep;
+    }
+
     public static function date($value)
     {
         if (! is_string($value) || ! preg_match('/^[1-9][0-9]{3}-[0-9]{2}-[0-9]{2}$/D', $value)) {
@@ -55,14 +92,34 @@ class PrivatePackage
         return $result;
     }
 
+    // Booking cutoff (Bangkok time): Mon–Fri before 15:00 → tomorrow, from 15:00 → the day after;
+    // Saturday or Sunday → next Tuesday at the earliest.
+    public static function earliest_start($now = null)
+    {
+        $now = $now ?? time();
+        if ((int) date('N', $now) >= 6) {
+            return date('Y-m-d', strtotime('next tuesday', $now));
+        }
+
+        return date('Y-m-d', strtotime(date('Y-m-d', $now).' +'.((int) date('G', $now) < 15 ? 1 : 2).' days'));
+    }
+
     public static function dates_allowed($dep, $start)
     {
         if (! self::date($start)) {
             return false;
         }
         $end = date('Y-m-d', strtotime($start.' +'.((int) $dep['days'] - 1).' days'));
-        if ($start < $dep['start_date'] || $end > $dep['end_date'] || $start < date('Y-m-d', strtotime('+'.(int) $dep['lead_days'].' days'))) {
+        [$from, $to] = self::window($dep);
+        if ($start < $from || $end > $to || $start < self::earliest_start()) {
             return false;
+        }
+        if (self::anytime($dep)) {
+            foreach ($dep['covered'] ?? [] as [$coveredStart, $coveredEnd]) {
+                if ($start >= $coveredStart && $end <= $coveredEnd) {
+                    return false;
+                }
+            }
         }
         foreach (json_decode($dep['blackout_dates'] ?? '[]', true) ?: [] as $blocked) {
             if ($blocked >= $start && $blocked <= $end) {
@@ -75,8 +132,9 @@ class PrivatePackage
 
     public static function first_date($dep, $from = null, $to = null)
     {
-        $start = max($dep['start_date'], date('Y-m-d', strtotime('+'.(int) $dep['lead_days'].' days')), $from ?: '0000-00-00');
-        $last = min(date('Y-m-d', strtotime($dep['end_date'].' -'.((int) $dep['days'] - 1).' days')), $to ?: '9999-12-31');
+        [$periodStart, $periodEnd] = self::window($dep);
+        $start = max($periodStart, self::earliest_start(), $from ?: '0000-00-00');
+        $last = min(date('Y-m-d', strtotime($periodEnd.' -'.((int) $dep['days'] - 1).' days')), $to ?: '9999-12-31');
         for ($date = $start; $date <= $last; $date = date('Y-m-d', strtotime($date.' +1 day'))) {
             if (self::dates_allowed($dep, $date)) {
                 return $date;
@@ -94,7 +152,8 @@ class PrivatePackage
         }
         foreach (json_decode($dep['private_rates'] ?? '[]', true) ?: [] as $rate) {
             if ($rate['level'] === $level && $count >= $rate['min'] && $count <= $rate['max']) {
-                $snapshot = $rate + ['period_start' => $dep['start_date'], 'period_end' => $dep['end_date'], 'deposit_per_person' => $dep['deposit_per_person'], 'deposit_enabled' => $dep['deposit_enabled'], 'deposit_cutoff_days' => $dep['deposit_cutoff_days'], 'balance_due_days' => $dep['balance_due_days']];
+                [$periodStart, $periodEnd] = self::window($dep);
+                $snapshot = $rate + ['period_start' => $periodStart, 'period_end' => $periodEnd, 'anytime' => self::anytime($dep) ? 1 : 0,'deposit_per_person' => $dep['deposit_per_person'], 'deposit_enabled' => $dep['deposit_enabled'], 'deposit_cutoff_days' => $dep['deposit_cutoff_days'], 'balance_due_days' => $dep['balance_due_days']];
 
                 return array_replace($dep, ['start_date' => $start, 'end_date' => $end, 'price_per_person' => $rate['price'], 'capacity' => $rate['max'], 'seats_available' => $rate['max'], 'package_snapshot' => json_encode($snapshot,JSON_UNESCAPED_UNICODE)]);
             }

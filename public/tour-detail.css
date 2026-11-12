@@ -151,10 +151,12 @@ html:has(.trip-detail){scroll-padding-top:0}
 
 #booking .booking-total{gap:4px;margin:0;padding:0 2px;border:0;border-radius:0;background:none}
 #booking .booking-total>div{flex-direction:row;align-items:baseline;justify-content:space-between;gap:10px;font-size:12px}
-#booking .booking-total>div:not(.grand-total){display:none}
-#booking .booking-total.has-supplement>div:not(.grand-total):not(:first-child){display:flex}
+#booking .booking-total>div:not(.grand-total){display:none;color:var(--panel-muted)}
+/* Once a round and traveller count are set, show how the total is built: per person, travellers × price, then single supplement if any. */
+#booking .booking-total.has-breakdown>div:nth-child(-n+2),#booking .booking-total.has-breakdown.has-supplement>div:nth-child(3){display:flex}
+#booking .booking-total>div:not(.grand-total) :is(strong,b){font-size:12px;font-weight:600;line-height:1.4;color:var(--ink);font-variant-numeric:tabular-nums}
 #booking .booking-total .grand-total{padding:0;border:0;color:var(--panel-muted)}
-#booking .booking-total.has-supplement .grand-total{padding-top:4px;border-top:1px solid var(--panel-line)}
+#booking .booking-total.has-breakdown .grand-total{margin-top:2px;padding-top:6px;border-top:1px solid var(--panel-line)}
 #booking .booking-total .grand-total strong{font-size:20px;line-height:1.25;color:var(--ink)}
 #booking .booking-total small{font-size:10px;line-height:1.4;color:var(--panel-muted)}
 #booking .btn{margin:0;min-height:46px;padding:10px 16px;gap:10px;border-radius:999px}
@@ -163,6 +165,10 @@ html:has(.trip-detail){scroll-padding-top:0}
 #booking .booking-chat-link{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:26px;font-size:12px;font-weight:600}
 #booking .booking-chat-link .material-icons{font-size:14px}
 #booking .fineprint{margin:0;font-size:10px;line-height:1.4;color:var(--panel-muted)}
+/* The floating reCAPTCHA badge is hidden; Google allows this only while .recaptcha-note stays visible in the form, so short screens keep it too. visibility, not display:none, keeps reCAPTCHA working. */
+.grecaptcha-badge{visibility:hidden}
+#booking .recaptcha-note{margin:4px 0 0;font-size:10px;line-height:1.4;color:var(--panel-muted)}
+#booking .recaptcha-note a{color:inherit;text-decoration:underline}
 #booking .trip-license{justify-content:center;gap:4px;margin:0;text-align:center}
 #booking .trip-license .material-icons{font-size:12px}
 #booking .notice{margin:0}
@@ -249,3 +255,9 @@ html:has(.trip-detail){scroll-padding-top:0}
 /* The drawn hairline (signature-motion .rv-rule) hangs below the heading; leave room so it sits in the gap above Day 1, not across the open card. */
 .trip-detail .trip-section-heading{margin-bottom:32px}.trip-detail .trip-section-heading>.rv-rule{bottom:-16px}
 @media(max-width:540px){.trip-detail .trip-section-heading{margin-bottom:24px}.trip-detail .trip-section-heading>.rv-rule{bottom:-12px}}
+
+/* Private rates: service level is a heading row, so only count + price columns remain and fit on phones */
+.trip-detail .private-rate-table,.detail-content .table-scroll .private-rate-table{min-width:0}
+.trip-detail .private-rate-table td:last-child,.trip-detail .private-rate-table thead th:last-child{text-align:right;white-space:nowrap}
+.trip-detail .private-rate-table .rate-level-row th{text-align:left;font-weight:700}
+.trip-detail .private-rate-table .rate-level-row small{display:block;font-weight:400;margin-top:4px}

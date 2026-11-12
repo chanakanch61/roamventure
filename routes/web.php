@@ -15,6 +15,7 @@ use App\Http\Controllers\GalleryAdminController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\HomeDestinationsAdminController;
+use App\Http\Controllers\HotelLibraryAdminController;
 use App\Http\Controllers\PackageLevelsAdminController;
 use App\Http\Controllers\PassportsController;
 use App\Http\Controllers\SeoAdminController;
@@ -81,6 +82,12 @@ $page('admin/vehicle-templates/photo', [VehicleTemplatesAdminController::class, 
 $page('admin/vehicle-templates/from-program', [VehicleTemplatesAdminController::class, 'from_program']);
 $page('admin/vehicle-templates/{id}/delete', [VehicleTemplatesAdminController::class, 'delete'])->whereNumber('id');
 $page('admin/vehicle-templates/{id}', [VehicleTemplatesAdminController::class, 'edit'])->whereNumber('id');
+$page('admin/hotel-library', [HotelLibraryAdminController::class, 'index']);
+$page('admin/hotel-library/new', [HotelLibraryAdminController::class, 'edit']);
+$page('admin/hotel-library/photo', [HotelLibraryAdminController::class, 'photo']);
+$page('admin/hotel-library/from-program', [HotelLibraryAdminController::class, 'from_program']);
+$page('admin/hotel-library/{id}/delete', [HotelLibraryAdminController::class, 'delete'])->whereNumber('id');
+$page('admin/hotel-library/{id}', [HotelLibraryAdminController::class, 'edit'])->whereNumber('id');
 
 $page('admin/tours', [AdminController::class, 'tours']);
 $page('admin/tours/add', [AdminController::class, 'edit']);

@@ -15,6 +15,7 @@ class TripRepository
     private const UPLOAD_COLUMNS = [
         'tours' => ['cover', 'source_pdf', 'vehicle_options'],
         'vehicle_templates' => ['vehicle_rows'],
+        'hotel_library' => ['images_json'],
         'tour_images' => ['path'],
         'tour_days' => ['image_path', 'images_json', 'hotels_json'],
         'blog_posts' => ['cover', 'content'],
@@ -34,7 +35,10 @@ class TripRepository
 
     public function quote($dep)
     {
-        return hash_hmac('sha256', implode('|', [$dep['id'], $dep['start_date'], $dep['end_date'], number_format((float) $dep['price_per_person'], 2, '.', ''), $dep['single_supplement'] === null ? 'unset' : number_format((float) $dep['single_supplement'], 2, '.', ''), (int) $dep['room_available'], $dep['private_rates'] ?? '', $dep['lead_days'] ?? 0, $dep['blackout_dates'] ?? '', $dep['days'] ?? 0, $dep['deposit_per_person'] ?? 0, $dep['deposit_enabled'] ?? 0, $dep['deposit_cutoff_days'] ?? 30, $dep['balance_due_days'] ?? 14]), config('app.key'));
+        // An anytime period's dates move every day, so its quote is pinned to its horizon instead.
+        $anytime = PrivatePackage::anytime($dep);
+
+        return hash_hmac('sha256', implode('|', [$dep['id'], $anytime ? 'anytime' : $dep['start_date'], $anytime ? (int) $dep['advance_months'] : $dep['end_date'],number_format((float) $dep['price_per_person'], 2, '.', ''), $dep['single_supplement'] === null ? 'unset' : number_format((float) $dep['single_supplement'], 2, '.', ''), (int) $dep['room_available'], $dep['private_rates'] ?? '', $dep['lead_days'] ?? 0, $dep['blackout_dates'] ?? '', $dep['days'] ?? 0, $dep['deposit_per_person'] ?? 0, $dep['deposit_enabled'] ?? 0, $dep['deposit_cutoff_days'] ?? 30, $dep['balance_due_days'] ?? 14]), config('app.key'));
     }
 
     public function departure($id, $public = false)
@@ -46,10 +50,31 @@ class TripRepository
         $dep = DB::select($sql, $public ? [(int) $id, date('Y-m-d'), date('Y-m-d')] : [(int) $id])[0] ?? null;
         if ($dep) {
             $dep = $this->package_levels->hydrate($dep);
+            if (PrivatePackage::anytime($dep)) {
+                $dated = DB::select('SELECT start_date,end_date FROM departures WHERE tour_id=? AND id<>? AND active=1 AND anytime=0 AND private_rates IS NOT NULL', [$dep['tour_id'], $dep['id']]);
+                $dep = PrivatePackage::resolve($dep, array_map(fn ($d) => [$d['start_date'], $d['end_date']], $dated));
+            }
             $dep['quote'] = $this->quote($dep);
         }
 
         return $dep;
+    }
+
+    // Gives a tour's anytime period today's dates, leaving the dates its active dated periods cover to them.
+    private function resolve_periods($deps)
+    {
+        $covered = [];
+        foreach ($deps as $dep) {
+            if (! empty($dep['private_rates']) && ! PrivatePackage::anytime($dep) && $dep['active']) {
+                $covered[] = [$dep['start_date'], $dep['end_date']];
+            }
+        }
+        foreach ($deps as &$dep) {
+            $dep = PrivatePackage::resolve($dep, $covered);
+        }
+        unset($dep);
+
+        return $deps;
     }
 
     public function settings()
@@ -199,7 +224,7 @@ class TripRepository
             $byTour[$period['tour_id']][] = $this->package_levels->hydrate($period, $levels);
         }
         foreach ($tours as &$tour) {
-            $tour['card_periods'] = $byTour[$tour['id']] ?? [];
+            $tour['card_periods'] = $this->resolve_periods($byTour[$tour['id']] ?? []);
             if ($tour['program_type'] === 'private') {
                 $tour['card_periods'] = array_values(array_filter($tour['card_periods'], function ($d) use ($tour, $filters) {
                     return PrivatePackage::first_date($d + ['days' => $tour['days']], $filters['date_from'], $filters['date_to']) !== null;
@@ -447,6 +472,7 @@ class TripRepository
             $departure['quote'] = $this->quote($departure);
         }
         unset($departure);
+        $tour['departures'] = $this->resolve_periods($tour['departures']);
 
         return $this->airlines->attach([$tour])[0];
     }
@@ -683,7 +709,7 @@ class TripRepository
     public function remove_replaced_files($paths)
     {
         foreach (array_unique($paths) as $path) {
-            if (preg_match('~^(public/uploads/(tours/[a-z0-9-]+/images/|vehicle-templates/)?[a-f0-9]+\.(jpg|jpeg|png|webp)|storage/(tour-pdfs|tours/[a-z0-9-]+/doc)/[a-f0-9]+\.pdf)$~D', $path) && ! $this->upload_in_use($path) && is_file(base_path($path))) {
+            if (preg_match('~^(public/uploads/(tours/[a-z0-9-]+/images/|vehicle-templates/|hotel-library/)?[a-f0-9]+\.(jpg|jpeg|png|webp)|storage/(tour-pdfs|tours/[a-z0-9-]+/doc)/[a-f0-9]+\.pdf)$~D', $path) && ! $this->upload_in_use($path) && is_file(base_path($path))) {
                 @unlink(base_path($path));
             }
         }

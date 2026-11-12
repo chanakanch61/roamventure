@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="google-site-verification" content="UAkqIJ_UYIMir7hl2zdbLrBAi_U8nJK3nVus4pJgX4U" />
 <?php load_view('layout/tracking'); ?>
 <?php $meta=$meta ?? []; $pageTitle=$meta['title'] ?? (!empty($tour['seo_title']) ? $tour['seo_title'] : ($title ?? 'RoamVenture').' · RoamVenture'); $pageDescription=$meta['description'] ?? (!empty($tour['seo_description']) ? $tour['seo_description'] : (!empty($tour['summary']) ? text_excerpt($tour['summary']) : seo_default_description())); $pageKeywords=$meta['keywords'] ?? ($tour['seo_keywords'] ?? ''); $privatePage=!empty($blog_preview) || $admin_layout || strpos(uri_string(),'admin')===0 || strpos(uri_string(),'booking/')===0 || strpos(uri_string(),'billing_admin')===0 || strpos(uri_string(),'destinations_admin')===0; $publicTheme=!$privatePage || !empty($preview); ?>
 <title><?= e($pageTitle) ?></title>
@@ -21,7 +22,9 @@
 <script src="<?= base_url() . 'public/slider-drag.js'.'?v='.filemtime(base_path()."/".'public/slider-drag.js') ?>" defer></script>
 <script src="<?= base_url() . 'public/app.js'.'?v='.filemtime(base_path()."/".'public/app.js') ?>" defer></script>
 <link rel="stylesheet" href="<?= base_url() . 'public/billing.css'.'?v='.filemtime(base_path()."/".'public/billing.css') ?>">
+<?php if (isset($booking_payment_page)): ?><script src="<?= base_url().'public/booking-payment.js?v='.filemtime(base_path()."/".'public/booking-payment.js') ?>" defer></script><?php endif ?>
 <?php if (isset($tour)): ?><link rel="stylesheet" href="<?= base_url().'public/day-photos.css?v='.filemtime(base_path()."/".'public/day-photos.css') ?>"><link rel="stylesheet" href="<?= base_url().'public/day-gallery.css?v='.filemtime(base_path()."/".'public/day-gallery.css') ?>"><?php if ($admin_layout): ?><script src="<?= base_url().'public/day-hotels.js?v='.filemtime(base_path()."/".'public/day-hotels.js') ?>" defer></script><script src="<?= base_url().'public/day-gallery.js?v='.filemtime(base_path()."/".'public/day-gallery.js') ?>" defer></script><?php endif ?><?php endif ?>
+<?php if (isset($hotel_library_page)): ?><link rel="stylesheet" href="<?= base_url().'public/day-photos.css?v='.filemtime(base_path()."/".'public/day-photos.css') ?>"><script src="<?= base_url().'public/hotel-library.js?v='.filemtime(base_path()."/".'public/hotel-library.js') ?>" defer></script><?php endif ?>
 <?php if (isset($preview, $tour)): ?>
 <link rel="stylesheet" href="<?= base_url().'public/tour-detail.css?v='.filemtime(base_path()."/".'public/tour-detail.css') ?>">
 <link rel="stylesheet" href="<?= base_url().'public/day-mosaic.css?v='.filemtime(base_path()."/".'public/day-mosaic.css') ?>">

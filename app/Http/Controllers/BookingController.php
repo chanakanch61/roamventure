@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\DiscordNotify;
 use finfo;
 use Illuminate\Support\Facades\DB;
 
@@ -24,54 +25,62 @@ class BookingController extends Controller
     {
         $b = $this->customer($token);
 
-        return $this->render('booking/detail', ['title' => 'รายละเอียดการจอง '.$b['reference'], 'booking' => $b, 'billing' => $this->billing->state($b)]);
+        return $this->render('booking/detail', ['title' => 'รายละเอียดการจอง '.$b['reference'], 'booking' => $b, 'billing' => $this->billing->state($b), 'booking_payment_page' => true, 'pay_open' => (bool) session('pay_open')]);
     }
 
+    // Payment happens inside the Payment Summary card on the detail page. Script requests get the
+    // re-rendered card back as JSON; plain form posts (no JS) redirect back to the card.
     public function payment($token)
     {
         $b = $this->customer($token);
-        if (request_method() === 'post') {
-            $action = request()->post('action');
-            $error = null;
-            if ($action === 'start') {
-                $error = $this->billing->start($b['id'], request()->post('kind'));
-            } elseif ($action === 'cancel') {
-                $error = $this->billing->cancel_attempt($b['id'], (int) request()->post('payment_id'));
-            } elseif ($action === 'slip') {
-                $fields = [];
-                foreach (['reported_amount', 'transferred_at', 'channel'] as $key) {
-                    $value = request()->post($key);
-                    if (! is_string($value)) {
-                        show_error('ข้อมูลไม่ถูกต้อง', 400);
-                    } $fields[$key] = $value;
-                }
-                // @: a failed mkdir only warned in legacy; the upload then reports the unwritable folder.
-                $dir = base_path('storage/slips/');
-                if (! is_dir($dir)) {
-                    @mkdir($dir, 0750, true);
-                }
-                $this->upload->initialize(['upload_path' => $dir, 'allowed_types' => 'jpg|jpeg|png', 'max_size' => 5120, 'max_width' => 8000, 'max_height' => 8000, 'encrypt_name' => true, 'file_ext_tolower' => true]);
-                if (! $this->upload->do_upload('slip')) {
-                    $error = 'อัปโหลดสลิป JPG หรือ PNG ไม่เกิน 5 MB: '.strip_tags($this->upload->display_errors());
-                } else {
-                    $f = $this->upload->data();
-                    if (! @getimagesize($f['full_path'])) {
-                        $error = 'สลิปต้องเป็นไฟล์รูปภาพ';
-                    } else {
-                        $error = $this->billing->submit_slip($b['id'], (int) request()->post('payment_id'), $fields, ['path' => 'storage/slips/'.$f['file_name'], 'hash' => hash_file('sha256', $f['full_path'])]);
-                    }
-                    if ($error) {
-                        @unlink($f['full_path']);
-                    }
-                }
-            } else {
-                show_error('คำสั่งไม่ถูกต้อง', 400);
-            }
-            session()->flash($error ? 'error' : 'success', $error ?: ($action === 'slip' ? 'ได้รับสลิปแล้ว รอทีมงานตรวจสอบ' : 'อัปเดตรายการชำระแล้ว'));
-            redirect_to(base_url().('booking/payment/'.$token));
+        $detail = base_url().'booking/detail/'.$token;
+        if (request_method() !== 'post') {
+            redirect_to($detail.'#payment');
         }
+        $action = request()->post('action');
+        $error = null;
+        if ($action === 'start') {
+            $error = $this->billing->start($b['id'], request()->post('kind'));
+        } elseif ($action === 'cancel') {
+            $error = $this->billing->cancel_attempt($b['id'], (int) request()->post('payment_id'));
+        } elseif ($action === 'slip') {
+            $amount = request()->post('reported_amount');
+            if (! is_string($amount)) {
+                show_error('ข้อมูลไม่ถูกต้อง', 400);
+            }
+            // @: a failed mkdir only warned in legacy; the upload then reports the unwritable folder.
+            $dir = base_path('storage/slips/');
+            if (! is_dir($dir)) {
+                @mkdir($dir, 0750, true);
+            }
+            $this->upload->initialize(['upload_path' => $dir, 'allowed_types' => 'jpg|jpeg|png', 'max_size' => 5120, 'max_width' => 8000, 'max_height' => 8000, 'encrypt_name' => true, 'file_ext_tolower' => true]);
+            if (! $this->upload->do_upload('slip')) {
+                $error = 'อัปโหลดสลิป JPG หรือ PNG ไม่เกิน 5 MB: '.strip_tags($this->upload->display_errors());
+            } else {
+                $f = $this->upload->data();
+                if (! @getimagesize($f['full_path'])) {
+                    $error = 'สลิปต้องเป็นไฟล์รูปภาพ';
+                } else {
+                    $error = $this->billing->submit_slip($b['id'], (int) request()->post('payment_id'), $amount, ['path' => 'storage/slips/'.$f['file_name'], 'hash' => hash_file('sha256', $f['full_path'])]);
+                }
+                if ($error) {
+                    @unlink($f['full_path']);
+                } else {
+                    app(DiscordNotify::class)->slip((int) $b['id'], (int) request()->post('payment_id'));
+                }
+            }
+        } else {
+            show_error('คำสั่งไม่ถูกต้อง', 400);
+        }
+        if (request()->ajax()) {
+            $b = $this->billing->by_token($token);
+            $html = load_view('partials/booking_payment', ['booking' => $b, 'billing' => $this->billing->state($b), 'settings' => $this->settings, 'pay_open' => true, 'pay_error' => $error, 'pay_step' => $error && $action === 'slip' ? 'slip' : null], true);
 
-        return $this->render('booking/payment', ['title' => 'ชำระเงิน '.$b['reference'], 'booking' => $b, 'billing' => $this->billing->state($b)]);
+            return response()->json(['ok' => ! $error, 'html' => $html]);
+        }
+        session()->flash($error ? 'error' : 'success', $error ?: ($action === 'slip' ? 'ได้รับสลิปแล้ว รอทีมงานตรวจสอบ' : 'อัปเดตรายการชำระแล้ว'));
+        session()->flash('pay_open', true);
+        redirect_to($detail.'#payment');
     }
 
     public function document($token, $paymentId = 0)

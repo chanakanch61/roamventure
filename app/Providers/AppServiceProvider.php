@@ -8,6 +8,7 @@ use App\Repositories\BlogRepository;
 use App\Repositories\DestinationRepository;
 use App\Repositories\GalleryRepository;
 use App\Repositories\HomeDestinationRepository;
+use App\Repositories\HotelLibraryRepository;
 use App\Repositories\PackageLevelRepository;
 use App\Repositories\PassportRepository;
 use App\Repositories\TourSearchRepository;
@@ -30,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
         foreach ([
             TripRepository::class, BillingRepository::class, PassportRepository::class, DestinationRepository::class,
             PackageLevelRepository::class, AdminAccessRepository::class, HomeDestinationRepository::class,
-            TourSearchRepository::class, BlogRepository::class, GalleryRepository::class, VehicleTemplateRepository::class,
+            TourSearchRepository::class, BlogRepository::class, GalleryRepository::class, VehicleTemplateRepository::class, HotelLibraryRepository::class,
             SiteGate::class, Upload::class, ResponseHeaders::class, ViewState::class,
         ] as $service) {
             $this->app->singleton($service);

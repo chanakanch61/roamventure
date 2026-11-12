@@ -5,7 +5,9 @@
  const uploadUrl=editor.dataset.hotelUploadUrl, assetBase=editor.dataset.assetBase;
  const folder=editor.querySelector('[name=hotel_folder]').value, token=editor.querySelector('input[name=_token]').value;
  const state=new WeakMap();
- let pending=0;
+ let pending=0, library=[];
+ try {library=JSON.parse(document.querySelector('#hotel-library-data')?.textContent||'[]');} catch {}
+ if(!Array.isArray(library))library=[];
  const save=box=>{box.querySelector('[data-hotels-field]').value=JSON.stringify(state.get(box));};
  const say=(box,text)=>{box.querySelector('[data-hotel-status]').textContent=text;};
  const iconButton=(attr,value,icon,label)=>{
@@ -20,8 +22,9 @@
    const tools=document.createElement('div');
    const up=iconButton('data-hotel-move','-1','↑','เลื่อนโรงแรมขึ้น');up.disabled=index===0;
    const down=iconButton('data-hotel-move','1','↓','เลื่อนโรงแรมลง');down.disabled=index===hotels.length-1;
+   const keep=document.createElement('button');keep.type='button';keep.className='text-button';keep.dataset.hotelLibrarySave='';keep.textContent='บันทึกเข้าคลัง';
    const remove=document.createElement('button');remove.type='button';remove.className='text-button danger';remove.dataset.hotelRemove='';remove.textContent='นำโรงแรมออก';
-   tools.append(up,down,remove);head.append(title,tools);
+   tools.append(up,down,keep,remove);head.append(title,tools);
    const name=document.createElement('label');name.textContent='ชื่อโรงแรม';
    const nameInput=document.createElement('input');nameInput.maxLength=200;nameInput.value=hotel.name;nameInput.dataset.hotelName='';nameInput.placeholder='เช่น Vala Toms Cliff Hotel';name.append(nameInput);
    const photos=document.createElement('div');photos.className='day-hotel-photos';
@@ -53,10 +56,97 @@
  setupAll();
  const swapItems=(items,index,step)=>{const target=index+step;if(target<0||target>=items.length)return;[items[index],items[target]]=[items[target],items[index]];};
 
+ // One picker serves every day. It sits outside the form so its buttons never submit the program.
+ let picker=null, pickerBox=null, picked=[];
+ function buildPicker() {
+  picker=document.createElement('dialog');picker.className='hotel-picker';picker.setAttribute('aria-labelledby','hotel-picker-title');
+  const head=document.createElement('div');head.className='hotel-picker-head';
+  const title=document.createElement('h3');title.id='hotel-picker-title';title.textContent='เลือกจากคลังโรงแรม';
+  const hint=document.createElement('small');hint.textContent='ติ๊กตามลำดับที่ต้องการ โรงแรมแรกที่ติ๊กเป็นโรงแรมหลัก ถัดไปเป็นตัวสำรอง';
+  head.append(title,hint);
+  const search=document.createElement('input');search.type='search';search.placeholder='ค้นหาชื่อโรงแรม';search.dataset.pickerSearch='';search.setAttribute('aria-label','ค้นหาชื่อโรงแรม');
+  const list=document.createElement('div');list.className='hotel-picker-list';list.dataset.pickerList='';
+  const foot=document.createElement('div');foot.className='hotel-picker-foot';
+  const manage=document.createElement('a');manage.className='text-link';manage.href=editor.dataset.hotelLibraryUrl;manage.target='_blank';manage.rel='noopener';manage.textContent='จัดการคลังโรงแรม ↗';
+  const cancel=document.createElement('button');cancel.type='button';cancel.className='outline-link';cancel.dataset.pickerCancel='';cancel.textContent='ยกเลิก';
+  const apply=document.createElement('button');apply.type='button';apply.className='btn';apply.dataset.pickerApply='';
+  foot.append(manage,cancel,apply);
+  picker.append(head,search,list,foot);
+  document.body.append(picker);
+  search.addEventListener('input',renderPicker);
+  picker.addEventListener('change',event=>{
+   if(!event.target.matches('[data-picker-hotel]'))return;
+   const id=Number(event.target.value);
+   picked=event.target.checked ? [...picked,id] : picked.filter(item=>item!==id);
+   renderPicker();
+  });
+  picker.addEventListener('click',event=>{
+   if(event.target===picker||event.target.closest('[data-picker-cancel]'))picker.close();
+   if(event.target.closest('[data-picker-apply]'))applyPicked();
+  });
+ }
+ function renderPicker() {
+  const list=picker.querySelector('[data-picker-list]'), query=picker.querySelector('[data-picker-search]').value.trim().toLowerCase();
+  const shown=library.filter(hotel=>!query||hotel.name.toLowerCase().includes(query)||picked.includes(hotel.id));
+  if(!library.length){
+   const empty=document.createElement('p');empty.className='fineprint';empty.textContent='ยังไม่มีโรงแรมในคลัง กด “บันทึกเข้าคลัง” ที่การ์ดโรงแรม หรือเพิ่มในหน้าจัดการคลังโรงแรม';
+   list.replaceChildren(empty);
+  } else {
+   list.replaceChildren(...shown.map(hotel=>{
+    const row=document.createElement('label');row.className='hotel-picker-row';
+    const box=document.createElement('input');box.type='checkbox';box.value=hotel.id;box.dataset.pickerHotel='';box.checked=picked.includes(hotel.id);
+    const thumb=document.createElement(hotel.images.length ? 'img' : 'span');thumb.className='hotel-picker-thumb';
+    if(hotel.images.length){thumb.src=assetBase+hotel.images[0];thumb.alt='';thumb.loading='lazy';}
+    const text=document.createElement('span');const name=document.createElement('b');name.textContent=hotel.name;const count=document.createElement('small');count.textContent=hotel.images.length+' รูป';text.append(name,count);
+    const order=document.createElement('span');order.className='hotel-picker-order';
+    const position=picked.indexOf(hotel.id);order.textContent=position<0 ? '' : position===0 ? '1 · หลัก' : (position+1)+' · สำรอง';
+    row.append(box,thumb,text,order);return row;
+   }));
+   if(!shown.length){const none=document.createElement('p');none.className='fineprint';none.textContent='ไม่พบโรงแรมที่ตรงกับคำค้น';list.append(none);}
+  }
+  const apply=picker.querySelector('[data-picker-apply]');
+  apply.disabled=!picked.length;apply.textContent=picked.length ? 'เพิ่ม '+picked.length+' โรงแรม' : 'เพิ่มโรงแรม';
+ }
+ function openPicker(box) {
+  if(!picker)buildPicker();
+  pickerBox=box;picked=[];
+  picker.querySelector('[data-picker-search]').value='';
+  renderPicker();
+  picker.showModal();
+  picker.querySelector('[data-picker-search]').focus();
+ }
+ function applyPicked() {
+  const hotels=state.get(pickerBox), names=new Set(hotels.map(hotel=>hotel.name.trim().toLowerCase())), skipped=[];
+  let added=0;
+  picked.map(id=>library.find(hotel=>hotel.id===id)).filter(Boolean).forEach(hotel=>{
+   if(names.has(hotel.name.trim().toLowerCase())){skipped.push(hotel.name);return;}
+   hotels.push({name:hotel.name,images:[...hotel.images]});added++;
+  });
+  picker.close();render(pickerBox);
+  say(pickerBox,(added ? 'เพิ่มจากคลังแล้ว '+added+' โรงแรม แก้เฉพาะโปรแกรมนี้ได้' : 'ไม่ได้เพิ่มโรงแรม')+(skipped.length ? ' · มีอยู่ในวันนี้แล้ว: '+skipped.join(', ') : ''));
+ }
+ async function saveToLibrary(box,hotel) {
+  if(pending){say(box,'กรุณารอให้อัปโหลดรูปเสร็จก่อนบันทึกเข้าคลัง');return;}
+  const name=hotel.name.trim();
+  if(!name){say(box,'ใส่ชื่อโรงแรมก่อนบันทึกเข้าคลัง');return;}
+  const data=new FormData();data.append('_token',token);data.append('name',name);data.append('images',JSON.stringify(hotel.images));
+  say(box,'กำลังบันทึก “'+name+'” เข้าคลัง …');
+  try {
+   const response=await fetch(editor.dataset.hotelLibrarySaveUrl,{method:'POST',body:data,credentials:'same-origin',headers:{Accept:'application/json'}});
+   const result=await response.json();
+   if(!response.ok||!result.id)throw Error(result.error||'บันทึกเข้าคลังไม่สำเร็จ');
+   library.push({id:result.id,name:result.name,images:result.images});
+   library.sort((a,b)=>a.name.localeCompare(b.name,'th'));
+   say(box,'บันทึก “'+result.name+'” เข้าคลังแล้ว เลือกใช้กับโปรแกรมอื่นได้ทันที');
+  } catch(error) {say(box,error.message);}
+ }
+
  editor.addEventListener('click',event=>{
   const button=event.target.closest('button');const box=button?.closest('[data-day-hotels]');
   if(!box)return;
   const hotels=state.get(box), card=button.closest('[data-hotel]'), index=card ? Number(card.dataset.hotel) : -1;
+  if(button.hasAttribute('data-hotel-library-pick')){openPicker(box);return;}
+  if(button.hasAttribute('data-hotel-library-save')){saveToLibrary(box,hotels[index]);return;}
   if(button.hasAttribute('data-hotel-add')){
    hotels.push({name:'',images:[]});render(box);box.querySelector('[data-hotel-list]').lastElementChild.querySelector('[data-hotel-name]').focus();return;
   }

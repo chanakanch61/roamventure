@@ -9,6 +9,7 @@ use App\Repositories\BlogRepository;
 use App\Repositories\DestinationRepository;
 use App\Repositories\GalleryRepository;
 use App\Repositories\HomeDestinationRepository;
+use App\Repositories\HotelLibraryRepository;
 use App\Repositories\PackageLevelRepository;
 use App\Repositories\PassportRepository;
 use App\Repositories\TourSearchRepository;
@@ -29,6 +30,7 @@ trait ResolvesServices
             'package_levels' => PackageLevelRepository::class,
             'airlines' => AirlineRepository::class,
             'vehicle_templates' => VehicleTemplateRepository::class,
+            'hotel_library' => HotelLibraryRepository::class,
             'access' => AdminAccessRepository::class,
             'home_places' => HomeDestinationRepository::class,
             'tour_search' => TourSearchRepository::class,
