@@ -43,14 +43,14 @@ $company=trim($settings['company_name'] ?? '') ?: (($seller['company_name'] ?? '
   <section class="invoice-trip">
    <span class="invoice-label">รายละเอียดการเดินทาง</span>
    <h2><?= e($b['tour_title']) ?></h2>
-   <div class="invoice-trip-meta"><span><?= thai_date($b['start_date']) ?> – <?= thai_date($b['end_date']) ?></span><span>ผู้เดินทาง <?= (int)$b['traveler_count'] ?> คน</span></div>
+   <div class="invoice-trip-meta"><span><?= thai_date($b['start_date']) ?> – <?= thai_date($b['end_date']) ?></span><span>ผู้เดินทาง <?= (int)$b['traveler_count'] ?> ท่าน</span></div>
    <p><?= e(booking_rooms_label($b)) ?></p>
   </section>
   <table class="invoice-items">
    <caption class="invoice-label">รายละเอียดค่าใช้จ่าย <span>สกุลเงิน: บาท (THB)</span></caption>
    <thead><tr><th scope="col">รายการ</th><th scope="col">จำนวน</th><th scope="col">ราคา / หน่วย</th><th scope="col">จำนวนเงิน</th></tr></thead>
    <tbody>
-    <tr><th scope="row">ค่าทัวร์<span><?= !empty($b['package_snapshot']) ? 'แพ็คเกจส่วนตัว · '.e((json_decode($b['package_snapshot'],true)['level'] ?? '')) : 'ตามโปรแกรมการเดินทาง' ?><?= isset($b['flight_included']) ? ' · '.($b['flight_included'] ? 'รวมตั๋วเครื่องบิน' : 'ไม่รวมตั๋วเครื่องบิน') : '' ?></span></th><td><?= (int)$b['traveler_count'] ?> คน</td><td><?= money($b['price_per_person']) ?></td><td><?= money($b['price_per_person']*$b['traveler_count']) ?></td></tr>
+    <tr><th scope="row">ค่าทัวร์<span><?= !empty($b['package_snapshot']) ? 'แพ็คเกจส่วนตัว · '.e((json_decode($b['package_snapshot'],true)['level'] ?? '')) : 'ตามโปรแกรมการเดินทาง' ?><?= isset($b['flight_included']) ? ' · '.($b['flight_included'] ? 'รวมตั๋วเครื่องบิน' : 'ไม่รวมตั๋วเครื่องบิน') : '' ?></span></th><td><?= (int)$b['traveler_count'] ?> ท่าน</td><td><?= money($b['price_per_person']) ?></td><td><?= money($b['price_per_person']*$b['traveler_count']) ?></td></tr>
     <tr><th scope="row">ค่าพักเดี่ยวเพิ่ม</th><td><?= (int)$singleRooms ?> ห้อง</td><td><?= $singleRooms>0 ? money($b['single_supplement']) : '—' ?></td><td><?= money($b['supplement_total']) ?></td></tr>
    </tbody>
    <tfoot class="invoice-summary">

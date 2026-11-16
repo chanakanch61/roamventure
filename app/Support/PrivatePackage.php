@@ -86,7 +86,14 @@ class PrivatePackage
                     $errors[] = 'ช่วงจำนวนคนในระดับ '.$level.' ซ้อนกัน';
                 }
             }
-            $result[] = ['level_id' => (int) $catalog['id'], 'level' => $level, 'min' => $min, 'max' => $max, 'price' => number_format((float) $price, 2, '.', ''), 'details' => trim($details)];
+            // Each rate row carries its own discount; blank means none.
+            $discountRaw = $row['discount'] ?? '';
+            $discount = $discountRaw === '' || $discountRaw === null ? 0 : filter_var($discountRaw, FILTER_VALIDATE_INT);
+            if ($discount === false || $discount < 0 || $discount > DepartureDiscount::MAX_PERCENT) {
+                $errors[] = 'ส่วนลดของแต่ละแถวต้องเป็นจำนวนเต็ม 0–'.DepartureDiscount::MAX_PERCENT.' %';
+                $discount = 0;
+            }
+            $result[] = ['level_id' => (int) $catalog['id'], 'level' => $level, 'min' => $min, 'max' => $max, 'price' => number_format((float) $price, 2, '.', ''), 'discount' => (int) $discount, 'details' => trim($details)];
         }
 
         return $result;

@@ -71,7 +71,7 @@
   return ['สวัสดีค่ะ/ครับ สนใจสอบถาม ' + data.get('topic'),
    value('destination') ? 'จุดหมาย / โปรแกรม / คำขอ: ' + value('destination') : '',
    data.get('travel_date') ? 'วันเดินทางที่สนใจ: ' + data.get('travel_date') : '',
-   data.get('travelers') ? 'จำนวนผู้เดินทาง: ' + data.get('travelers') + ' คน' : '',
+   data.get('travelers') ? 'จำนวนผู้เดินทาง: ' + data.get('travelers') + ' ท่าน' : '',
    value('message') ? 'รายละเอียดเพิ่มเติม: ' + value('message') : '',
    'ขอทราบรายละเอียดและเงื่อนไขเพิ่มเติม ขอบคุณค่ะ/ครับ'].filter(Boolean).join('\n');
  };

@@ -80,7 +80,7 @@ a{color:inherit}
     <h2 style="margin:0 0 18px;font-family:<?= $font ?>;font-size:22px;line-height:1.4;font-weight:700;color:#1a1a1a"><?= e($b['tour_title']) ?></h2>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
       <?= $row('วันเดินทาง', e(thai_date($b['start_date'])).' – '.e(thai_date($b['end_date']))) ?>
-      <?= $row('ผู้เดินทาง', (int) $b['traveler_count'].' คน') ?>
+      <?= $row('ผู้เดินทาง', (int) $b['traveler_count'].' ท่าน') ?>
       <?php if ($package): ?><?= $row('ระดับบริการ', 'แพ็คเกจส่วนตัว · '.e($package['level'] ?? '')) ?><?php endif ?>
       <?= $row('ห้องพัก', e($rooms)) ?>
       <?php if (! empty($b['ticket_help'])): ?><?= $row('ตั๋วเครื่องบิน', 'ให้ทีมงานช่วยจอง') ?><?php endif ?>

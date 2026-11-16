@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Support\DepartureDiscount;
 use App\Support\PrivatePackage;
 use App\Support\ResolvesServices;
 use App\Support\VehicleOptions;
@@ -50,6 +51,10 @@ class TripRepository
         $dep = DB::select($sql, $public ? [(int) $id, date('Y-m-d'), date('Y-m-d')] : [(int) $id])[0] ?? null;
         if ($dep) {
             $dep = $this->package_levels->hydrate($dep);
+            // Public reads (and every booking) use selling prices; admin reads keep the regular ones.
+            if ($public) {
+                $dep = DepartureDiscount::apply($dep);
+            }
             if (PrivatePackage::anytime($dep)) {
                 $dated = DB::select('SELECT start_date,end_date FROM departures WHERE tour_id=? AND id<>? AND active=1 AND anytime=0 AND private_rates IS NOT NULL', [$dep['tour_id'], $dep['id']]);
                 $dep = PrivatePackage::resolve($dep, array_map(fn ($d) => [$d['start_date'], $d['end_date']], $dated));
@@ -167,23 +172,24 @@ class TripRepository
     public function listing($filters = [], $limit = null)
     {
         $filters = $this->normalize_travel_dates($filters);
-        $query = DB::table('tours as t')->selectRaw('t.*,r.price_per_person min_price, r.start_date next_date, r.capacity, r.seats_available');
+        $pdo = DB::getPdo();
+        $today = $pdo->quote(date('Y-m-d'));
+        $query = DB::table('tours as t')->selectRaw('t.*,'.DepartureDiscount::price_sql('r', $today).' min_price, r.price_per_person min_regular_price, r.start_date next_date, r.capacity, r.seats_available');
         $membership = 'SELECT 1 FROM ('.$this->places->links_sql().') tr JOIN destination_nodes dr ON dr.id=tr.route_id JOIN destination_nodes dc ON dc.id=dr.parent_id JOIN destination_nodes dz ON dz.id=dc.parent_id WHERE tr.tour_id=t.id';
         foreach (['route_id' => 'dr.id', 'country_id' => 'dc.id', 'zone_id' => 'dz.id'] as $key => $column) {
             if (! empty($filters[$key])) {
                 $query->whereRaw('EXISTS ('.$membership.' AND '.$column.'='.(int) $filters[$key].')');
             }
         }
-        $pdo = DB::getPdo();
-        $today = $pdo->quote(date('Y-m-d'));
         $window = '';
         $rangeValid = $filters['date_from'] !== '' && $filters['date_to'] !== '';
         if ($rangeValid) {
             $window = ' AND (d.private_rates IS NOT NULL OR (d.start_date >= '.$pdo->quote($filters['date_from']).' AND d.start_date <= '.$pdo->quote($filters['date_to']).'))';
         }
         $seatSql = $this->seat_sql();
-        $query->leftJoin(DB::raw("($seatSql) r"), function ($join) use ($seatSql, $today, $window) {
-            $join->whereRaw("r.id=(SELECT d.id FROM ($seatSql) d WHERE d.tour_id=t.id AND d.active=1 AND ((d.private_rates IS NULL AND d.start_date >= $today) OR (d.private_rates IS NOT NULL AND d.end_date >= $today)) AND d.price_per_person>0 $window ORDER BY (d.seats_available>0) DESC,d.price_per_person ASC,d.start_date ASC,d.id ASC LIMIT 1)");
+        $salePrice = DepartureDiscount::price_sql('d', $today);
+        $query->leftJoin(DB::raw("($seatSql) r"), function ($join) use ($seatSql, $today, $window, $salePrice) {
+            $join->whereRaw("r.id=(SELECT d.id FROM ($seatSql) d WHERE d.tour_id=t.id AND d.active=1 AND ((d.private_rates IS NULL AND d.start_date >= $today) OR (d.private_rates IS NOT NULL AND d.end_date >= $today)) AND d.price_per_person>0 $window ORDER BY (d.seats_available>0) DESC,$salePrice ASC,d.start_date ASC,d.id ASC LIMIT 1)");
         });
         $query->where('t.status', 'published');
         if (in_array($filters['program_type'] ?? '', ['fixed', 'private'], true)) {
@@ -221,7 +227,7 @@ class TripRepository
         $byTour = [];
         $levels = $this->package_levels->all();
         foreach ($periods as $period) {
-            $byTour[$period['tour_id']][] = $this->package_levels->hydrate($period, $levels);
+            $byTour[$period['tour_id']][] = DepartureDiscount::apply($this->package_levels->hydrate($period, $levels));
         }
         foreach ($tours as &$tour) {
             $tour['card_periods'] = $this->resolve_periods($byTour[$tour['id']] ?? []);
@@ -229,8 +235,16 @@ class TripRepository
                 $tour['card_periods'] = array_values(array_filter($tour['card_periods'], function ($d) use ($tour, $filters) {
                     return PrivatePackage::first_date($d + ['days' => $tour['days']], $filters['date_from'], $filters['date_to']) !== null;
                 }));
-                $tour['min_price'] = $tour['card_periods'] ? min(array_column($tour['card_periods'], 'price_per_person')) : null;
+                $cheapest = null;
+                foreach ($tour['card_periods'] as $period) {
+                    if ($cheapest === null || (float) $period['price_per_person'] < (float) $cheapest['price_per_person']) {
+                        $cheapest = $period;
+                    }
+                }
+                $tour['min_price'] = $cheapest['price_per_person'] ?? null;
+                $tour['min_regular_price'] = $cheapest['regular_price'] ?? null;
             }
+            $tour['max_discount'] = DepartureDiscount::best($tour['card_periods']);
         }
         unset($tour);
         if ($rangeValid) {
@@ -428,8 +442,11 @@ class TripRepository
         return DB::select('SELECT dr.name destination,dr.slug route_slug,COUNT(DISTINCT t.id) total,MIN(t.cover) cover FROM tours t JOIN ('.$this->places->links_sql().") tr ON tr.tour_id=t.id JOIN destination_nodes dr ON dr.id=tr.route_id WHERE t.status='published' GROUP BY dr.id,dr.name,dr.slug ORDER BY total DESC,dr.name");
     }
 
-    public function find($idOrSlug, $public = false)
+    // $priced (default: same as $public) gives departures their selling prices, see DepartureDiscount::apply().
+    // The admin editor reads regular prices so saving the form never discounts twice.
+    public function find($idOrSlug, $public = false, $priced = null)
     {
+        $priced = $priced ?? $public;
         $query = DB::table('tours');
         if (is_int($idOrSlug)) {
             $query->where('id', $idOrSlug);
@@ -465,6 +482,9 @@ class TripRepository
         $tour['departures'] = DB::select($sql.' ORDER BY s.start_date,s.id', $binds);
         foreach ($tour['departures'] as &$departure) {
             $departure = $this->package_levels->hydrate($departure);
+            if ($priced) {
+                $departure = DepartureDiscount::apply($departure);
+            }
             $departure['days'] = $tour['days'];
             $departure['program_type'] = $tour['program_type'];
             $departure['deposit_per_person'] = $tour['deposit_per_person'];
@@ -765,7 +785,7 @@ class TripRepository
             return 'รอบนี้ไม่มีที่พักในโปรแกรม กรุณาเลือกข้อมูลใหม่';
         }
         if (! $count || $count < 1 || $count > 500) {
-            return 'กรุณาระบุจำนวนผู้เดินทางเป็นจำนวนเต็มตั้งแต่ 1 คน';
+            return 'กรุณาระบุจำนวนผู้เดินทางเป็นจำนวนเต็มตั้งแต่ 1 ท่าน';
         }
         if ($rate && $count > $rate['seats_available']) {
             return 'จำนวนผู้เดินทางเกินที่นั่งว่าง ขณะนี้เหลือ '.$rate['seats_available'].' ที่นั่ง';

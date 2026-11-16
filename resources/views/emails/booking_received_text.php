@@ -11,7 +11,7 @@
 
 วันเดินทาง: <?= thai_date($b['start_date']) ?> – <?= thai_date($b['end_date']) ?>
 
-ผู้เดินทาง: <?= (int) $b['traveler_count'] ?> คน
+ผู้เดินทาง: <?= (int) $b['traveler_count'] ?> ท่าน
 <?php if ($package): ?>ระดับบริการ: แพ็คเกจส่วนตัว · <?= $package['level'] ?? '' ?>
 
 <?php endif ?>

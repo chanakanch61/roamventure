@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Repositories\HotelLibraryRepository;
+use App\Support\DepartureDiscount;
 use App\Support\PrivatePackage;
 use App\Support\VehicleOptions;
 use DateTime;
@@ -102,7 +103,7 @@ class AdminController extends Controller
 
     public function preview($id)
     {
-        $tour = $this->trips->find((int) $id);
+        $tour = $this->trips->find((int) $id, false, true);
         if (! $tour) {
             show_404();
         }
@@ -484,7 +485,18 @@ return $this->render('detail', ['title' => 'ตัวอย่าง: '.$tour['t
                     if ($single !== '' && (! is_scalar($single) || ! preg_match('/^\d{1,8}(\.\d{1,2})?$/', (string) $single))) {
                         $errors[] = 'ค่าพักเดี่ยวต้องเป็น 0 หรือจำนวนเงินบวก ทศนิยมไม่เกิน 2 ตำแหน่ง';
                     }
-                    $departures[] = ['id' => (int) ($dep['id'] ?? 0), 'start_date' => $start, 'end_date' => $end, 'anytime' => $anytime ? 1 : 0, 'advance_months' => $advanceMonths, 'active' => empty($dep['active']) ? 0 : 1, 'capacity' => (int) $capacity, 'price_per_person' => $price, 'single_supplement' => $single === '' ? null : (is_scalar($single) ? (float) $single : null)];
+                    $discountRaw = $dep['discount_percent'] ?? '';
+                    $discount = $discountRaw === '' || $discountRaw === null ? 0 : filter_var($discountRaw, FILTER_VALIDATE_INT);
+                    if ($discount === false || $discount < 0 || $discount > DepartureDiscount::MAX_PERCENT) {
+                        $errors[] = 'ส่วนลดต้องเป็นจำนวนเต็ม 0–'.DepartureDiscount::MAX_PERCENT.' %';
+                        $discount = 0;
+                    }
+                    $discountUntil = $dep['discount_until'] ?? '';
+                    if (! is_string($discountUntil) || ($discountUntil !== '' && ! $this->valid_date($discountUntil))) {
+                        $errors[] = 'วันสิ้นสุดส่วนลดไม่ถูกต้อง';
+                        $discountUntil = '';
+                    }
+                    $departures[] = ['id' => (int) ($dep['id'] ?? 0), 'start_date' => $start, 'end_date' => $end, 'anytime' => $anytime ? 1 : 0, 'advance_months' => $advanceMonths, 'active' => empty($dep['active']) ? 0 : 1, 'capacity' => (int) $capacity, 'price_per_person' => $price, 'discount_percent' => $isPrivate ? 0 : (int) $discount, 'discount_until' => ($isPrivate ? max([0, ...array_column($rates, 'discount')]) : $discount) && $discountUntil !== '' ? $discountUntil : null, 'single_supplement' => $single === '' ? null : (is_scalar($single) ? (float) $single : null)];
                     $departures[count($departures) - 1] += ['private_rates' => $isPrivate ? json_encode($rates, JSON_UNESCAPED_UNICODE) : null, 'lead_days' => 0, 'blackout_dates' => $isPrivate ? json_encode(array_values(array_unique($blackouts))) : null];
                     $cutoff = filter_var($dep['deposit_cutoff_days'] ?? 30, FILTER_VALIDATE_INT);
                     $balance = filter_var($dep['balance_due_days'] ?? 14, FILTER_VALIDATE_INT);

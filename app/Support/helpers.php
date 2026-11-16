@@ -130,7 +130,7 @@ function page_banner_defaults()
         'flight' => ['label' => 'ทัวร์รวมตั๋ว', 'eyebrow' => 'FLIGHT INCLUDED', 'title' => 'ทัวร์รวมตั๋ว', 'description' => 'ราคาเดียวรวมตั๋วเครื่องบิน เลือกเส้นทาง เลือกรอบ แล้วเตรียมกระเป๋าได้เลย'],
         'land' => ['label' => 'ทัวร์ไม่รวมตั๋ว', 'eyebrow' => 'LAND ONLY', 'title' => 'ทัวร์ไม่รวมตั๋ว', 'description' => 'จองตั๋วเองตามสะดวก แล้วมาเจอกันที่จุดนัดพบ เราดูแลส่วนที่เหลือของทริปให้', 'image' => 'public/images/story.jpg'],
         'private' => ['label' => 'แพ็คเกจส่วนตัว', 'eyebrow' => 'YOUR PEOPLE. YOUR PRIVATE TRIP.', 'title' => 'แพ็คเกจส่วนตัว', 'description' => 'เดินทางกับคนของคุณ เลือกวันและระดับบริการ พร้อมราคาตามจำนวนผู้เดินทาง', 'image' => 'public/images/khaoyai.jpg'],
-        'fixed' => ['label' => 'ทัวร์ต่างประเทศ', 'eyebrow' => 'EXPLORE THE WORLD', 'title' => 'ทัวร์ต่างประเทศ', 'description' => 'เลือกจุดหมายและรอบเดินทางที่ใช่ จองได้ตั้งแต่ 1 คน แล้วออกไปสร้างความทรงจำใหม่'],
+        'fixed' => ['label' => 'ทัวร์ต่างประเทศ', 'eyebrow' => 'EXPLORE THE WORLD', 'title' => 'ทัวร์ต่างประเทศ', 'description' => 'เลือกจุดหมายและรอบเดินทางที่ใช่ จองได้ตั้งแต่ 1 ท่าน แล้วออกไปสร้างความทรงจำใหม่'],
     ];
 }
 // The three ways a program is sold. "fixed" (/tours) stays as the combined group-tour listing outside this list.
@@ -262,21 +262,29 @@ function tour_availability($tour)
     }));
     $prices = [];
     $groupSizes = [];
+    // The lowest selling price and the regular price it was cut from (equal when not discounted).
+    $from = null;
+    $offer = function ($price, $regular) use (&$prices, &$from) {
+        $prices[] = $price;
+        if ($from === null || $price < $from['price']) {
+            $from = ['price' => $price, 'regular' => $regular];
+        }
+    };
     foreach ($bookable as $dep) {
         if (! $isPrivate) {
-            $prices[] = (float) $dep['price_per_person'];
+            $offer((float) $dep['price_per_person'], (float) ($dep['regular_price'] ?? $dep['price_per_person']));
 
             continue;
         }
         foreach (json_decode($dep['private_rates'], true) ?: [] as $rate) {
             if ((float) $rate['price'] > 0) {
-                $prices[] = (float) $rate['price'];
+                $offer((float) $rate['price'], (float) ($rate['regular'] ?? $rate['price']));
                 array_push($groupSizes, (int) $rate['min'], (int) $rate['max']);
             }
         }
     }
 
-    return ['available' => $available, 'bookable' => $bookable, 'prices' => $prices, 'group_size' => $groupSizes ? people_range(min($groupSizes), max($groupSizes)) : null];
+    return ['available' => $available, 'bookable' => $bookable, 'prices' => $prices, 'from' => $from, 'max_discount' => \App\Support\DepartureDiscount::best($bookable), 'group_size' => $groupSizes ? people_range(min($groupSizes), max($groupSizes)) : null];
 }
 function page_banner($settings, $type)
 {
@@ -413,6 +421,11 @@ function money($value)
 
     return number_format($value, abs($value - round($value)) < 0.00001 ? 0 : 2);
 }
+// The regular price struck through before a discounted one; empty when nothing was taken off.
+function price_was($regular, $price)
+{
+    return $regular !== null && (float) $regular > (float) $price ? '<s class="price-was"><span class="price-was-label">ราคาปกติ </span>฿'.money($regular).'</s>' : '';
+}
 function thai_date($date)
 {
     if (! $date) {
@@ -477,7 +490,7 @@ function tour_coverage($tour)
 }
 function room_label($value)
 {
-    return ['twin' => 'พักคู่ · 2 เตียงเดี่ยว', 'double' => 'พักคู่ · 1 เตียงใหญ่', 'triple' => 'ห้องพัก 3 คน', 'single' => 'พักเดี่ยว · 1 คน/ห้อง', 'none' => 'ไม่มีที่พักในโปรแกรม'][$value] ?? 'ไม่ได้ระบุ (คำขอเดิม)';
+    return ['twin' => 'พักคู่ · 2 เตียงเดี่ยว', 'double' => 'พักคู่ · 1 เตียงใหญ่', 'triple' => 'ห้องพัก 3 ท่าน', 'single' => 'พักเดี่ยว · 1 ท่าน/ห้อง', 'none' => 'ไม่มีที่พักในโปรแกรม'][$value] ?? 'ไม่ได้ระบุ (คำขอเดิม)';
 }
 function booking_rooms_label($booking)
 {
@@ -485,7 +498,7 @@ function booking_rooms_label($booking)
         return room_label($booking['room_type']);
     }
     $parts = [];
-    foreach (['twin' => 'ห้องคู่ 2 เตียงเดี่ยว', 'double' => 'ห้องคู่ 1 เตียงใหญ่', 'triple' => 'ห้องพัก 3 คน', 'single' => 'ห้องเดี่ยว'] as $type => $label) {
+    foreach (['twin' => 'ห้องคู่ 2 เตียงเดี่ยว', 'double' => 'ห้องคู่ 1 เตียงใหญ่', 'triple' => 'ห้องพัก 3 ท่าน', 'single' => 'ห้องเดี่ยว'] as $type => $label) {
         if (($booking[$type.'_rooms'] ?? 0) > 0) {
             $parts[] = $label.' '.(int) $booking[$type.'_rooms'].' ห้อง';
         }

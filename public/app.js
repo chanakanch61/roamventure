@@ -200,7 +200,7 @@ if (departures) {
  const roomDetails=document.querySelector('#room-details'), bookingNext=document.querySelector('#booking-next'), bookingContact=document.querySelector('#booking-contact');
  let roomsTouched=false;
  const previewRate=()=>{ const count=Number(countInput.value); return allRates.filter(r=>r.level===privateLevel.value && count>=r.min && count<=r.max).sort((a,b)=>a.price-b.price)[0]; };
- const rateRange=r=>(Number(r.min)===Number(r.max) ? r.min : r.min+'–'+r.max)+' คน';
+ const rateRange=r=>(Number(r.min)===Number(r.max) ? r.min : r.min+'–'+r.max)+' ท่าน';
  const cheapestLevel=()=>[...allRates].sort((a,b)=>a.price-b.price)[0]?.level;
  // An odd group takes one triple so the suggestion never adds a single-room charge it can avoid.
  function suggestRooms(dep,count) {
@@ -284,7 +284,7 @@ if (departures) {
    const b=document.createElement('button'); b.type='button'; b.disabled=!d.price; b.dataset.date=d.iso;
    b.classList.toggle('is-start',d.iso===start); b.classList.toggle('is-trip',Boolean(tripEnd) && d.iso>start && d.iso<=tripEnd);
    b.setAttribute('aria-pressed',String(d.iso===start));
-   b.setAttribute('aria-label',thaiFullDate.format(utcDate(d.iso))+(d.price ? ' เริ่มเดินทางวันนี้ ราคา '+format(d.price)+' ต่อคนทั้งทริป' : ' จองไม่ได้'));
+   b.setAttribute('aria-label',thaiFullDate.format(utcDate(d.iso))+(d.price ? ' เริ่มเดินทางวันนี้ ราคา '+format(d.price)+' ต่อท่านทั้งทริป' : ' จองไม่ได้'));
    const number=document.createElement('span'); number.textContent=d.day; b.append(number);
    // Days inside the chosen trip show only the range; their own start prices read like a nightly rate.
    if (d.price && prices.length>1 && !b.classList.contains('is-trip')) { const price=document.createElement('small'); price.textContent=shortPrice(d.price); b.append(price); }
@@ -293,7 +293,7 @@ if (departures) {
   const note=document.createElement('small'); note.className='trip-calendar-note';
   const tripDays=Number(periodFor(start || days.find(d=>d.price)?.iso)?.days || 0);
   const whole=tripDays ? 'ทั้งทริป '+tripDays+' วัน' : 'ทั้งทริป';
-  note.textContent=!prices.length ? 'เดือนนี้ไม่มีวันที่จองได้สำหรับระดับและจำนวนคนนี้' : prices.length===1 ? 'ราคา '+format(prices[0])+' ต่อคน '+whole+' (ไม่ใช่ราคาต่อวัน)' : 'ราคาใต้วันที่ = ราคาต่อคน '+whole+' เมื่อเริ่มเดินทางวันนั้น (ไม่ใช่ราคาต่อวัน)';
+  note.textContent=!prices.length ? 'เดือนนี้ไม่มีวันที่จองได้สำหรับระดับและจำนวนคนนี้' : prices.length===1 ? 'ราคา '+format(prices[0])+' ต่อท่าน '+whole+' (ไม่ใช่ราคาต่อวัน)' : 'ราคาใต้วันที่ = ราคาต่อท่าน '+whole+' เมื่อเริ่มเดินทางวันนั้น (ไม่ใช่ราคาต่อวัน)';
   calendar.append(head,grid,note);
   if (focusSelector) calendar.querySelector(focusSelector)?.focus();
  }
@@ -339,14 +339,37 @@ if (departures) {
 
  const format = n => '฿' + Number(n).toLocaleString('th-TH', { maximumFractionDigits: 2 });
  const cents = value => Math.round(Number(value) * 100);
- const roomLabels = { twin: 'พักคู่ · 2 เตียงเดี่ยว', double: 'พักคู่ · 1 เตียงใหญ่', triple: 'ห้องพัก 3 คน', single: 'พักเดี่ยว · 1 คน/ห้อง', none: 'ไม่มีที่พักในโปรแกรม' };
- const roomNames = { twin: 'ห้องคู่ 2 เตียงเดี่ยว', double: 'ห้องคู่ 1 เตียงใหญ่', triple: 'ห้องพัก 3 คน', single: 'ห้องเดี่ยว' };
+ const roomLabels = { twin: 'พักคู่ · 2 เตียงเดี่ยว', double: 'พักคู่ · 1 เตียงใหญ่', triple: 'ห้องพัก 3 ท่าน', single: 'พักเดี่ยว · 1 ท่าน/ห้อง', none: 'ไม่มีที่พักในโปรแกรม' };
+ const roomNames = { twin: 'ห้องคู่ 2 เตียงเดี่ยว', double: 'ห้องคู่ 1 เตียงใหญ่', triple: 'ห้องพัก 3 ท่าน', single: 'ห้องเดี่ยว' };
  // Keeps the panel heading and the mobile bar on the customer's own price; null restores the page's text.
  function setLive(selector, text) {
   const el = document.querySelector(selector);
   if (!el) return;
   el.dataset.liveDefault ??= el.textContent;
   el.textContent = text ?? el.dataset.liveDefault;
+ }
+ // Regular price behind a departure's selling price: a private package's own rate, else the departure's.
+ const regularPrice = d => Number(d.packageRate ? d.packageRate.regular ?? d.packageRate.price : d.regular_price ?? d.price_per_person);
+ // Percent behind that price: a private package's rate row has its own, a group departure one for the whole departure.
+ const discountOf = d => Number(d.packageRate ? d.packageRate.discount : d.discount) || 0;
+ function wasMark(regular) {
+  const was = document.createElement('s');
+  was.className = 'price-was';
+  was.textContent = format(regular);
+  return was;
+ }
+ function showPrice(el, text, regular, price) {
+  el.replaceChildren();
+  if (Number(regular) > Number(price)) el.append(wasMark(regular), ' ');
+  el.append(text);
+ }
+ // Struck regular price beside a live price; undefined restores the page's own markup, a lower or equal value clears it.
+ function setWas(selector, regular, price) {
+  const el = document.querySelector(selector);
+  if (!el) return;
+  el.dataset.wasDefault ??= el.innerHTML;
+  if (regular === undefined) { el.innerHTML = el.dataset.wasDefault; return; }
+  el.replaceChildren(...(Number(regular) > Number(price) ? [wasMark(regular)] : []));
  }
  const lineLinks = document.querySelectorAll('[data-line-id]');
  const summary = document.querySelector('#trip-summary'), summaryCopy = document.querySelector('#trip-summary-copy');
@@ -382,7 +405,7 @@ if (departures) {
   const name = /\d\s*วัน/.test(title) ? title : title + ' ' + duration;
   const lines = ['สนใจ' + program + ' "' + name + '" (' + code + ')'];
   if (dep) lines.push('วันเดินทาง: ' + thaiDate.format(utcDate(dep.start_date)) + ' – ' + thaiDate.format(utcDate(dep.end_date)));
-  if (validCount) lines.push('ผู้เดินทาง: ' + count + ' คน');
+  if (validCount) lines.push('ผู้เดินทาง: ' + count + ' ท่าน');
   if (dep && privateDate) lines.push('ระดับบริการ: ' + privateLevel.value);
   if (dep && validRoom && hasRooms) lines.push('ห้องพัก: ' + rooms.filter(r => Number(r.input.value) > 0).map(r => roomNames[r.type] + ' × ' + r.input.value).join(', '));
   if (dep && validCount && validRoom) lines.push('ยอดรวม: ' + total + ' (ทีมงานยืนยันอีกครั้ง)');
@@ -401,20 +424,27 @@ if (departures) {
   const validRoom = dep && validNumbers && (hasRooms ? occupied === count && (!singleCount || dep.single_supplement !== null) : occupied === 0);
   const baseTotal = dep && validCount ? cents(dep.price_per_person) * count : 0;
   const supplementTotal = dep && validNumbers && singleCount && dep.single_supplement !== null ? cents(dep.single_supplement) * singleCount : 0;
-  document.querySelector('#price-person').textContent = dep ? format(dep.price_per_person) : preview ? 'เริ่มต้น ' + format(preview.price) : '—';
-  document.querySelector('#base-count').textContent = validCount ? count + ' คน' + (dep ? ' × ' + format(dep.price_per_person) : '') : '';
-  document.querySelector('#base-total').textContent = dep && validCount ? format(baseTotal / 100) : preview && validCount ? 'เริ่มต้น ' + format(cents(preview.price) * count / 100) : '—';
+  // A discounted departure lists its regular price, then the discount, so the rows add up to the same total.
+  const regular = dep ? regularPrice(dep) : preview ? Number(preview.regular ?? preview.price) : 0;
+  const discounted = Boolean(dep && regular > Number(dep.price_per_person));
+  const discountTotal = discounted && validCount ? (cents(regular) - cents(dep.price_per_person)) * count : 0;
+  showPrice(document.querySelector('#price-person'), dep ? format(dep.price_per_person) : preview ? 'เริ่มต้น ' + format(preview.price) : '—', dep ? regular : preview ? regular : 0, dep ? dep.price_per_person : preview?.price);
+  document.querySelector('#base-count').textContent = validCount ? count + ' ท่าน' + (dep ? ' × ' + format(discounted ? regular : dep.price_per_person) : '') : '';
+  document.querySelector('#base-total').textContent = dep && validCount ? format((baseTotal + discountTotal) / 100) : preview && validCount ? 'เริ่มต้น ' + format(cents(preview.price) * count / 100) : '—';
+  document.querySelector('#discount-row').hidden = !discountTotal;
+  document.querySelector('#discount-label').textContent = discounted ? discountOf(dep) + '%' : '';
+  document.querySelector('#discount-total').textContent = discountTotal ? '−' + format(discountTotal / 100) : '—';
   document.querySelector('#supplement-count').textContent = validNumbers && singleCount ? singleCount + ' ห้อง' + (dep?.single_supplement != null ? ' × ' + format(dep.single_supplement) : '') : '';
   document.querySelector('#supplement-total').textContent = dep && validNumbers ? format(supplementTotal / 100) : '—';
   document.querySelector('#price-total').textContent = dep && validCount && validRoom ? format((baseTotal + supplementTotal) / 100) : '—';
   document.querySelector('.booking-total').classList.toggle('has-supplement', supplementTotal > 0);
   document.querySelector('.booking-total').classList.toggle('has-breakdown', Boolean(dep && validCount));
-  document.querySelector('#group-capacity').textContent = dep ? dep.capacity + ' คน' : '—';
+  document.querySelector('#group-capacity').textContent = dep ? dep.capacity + ' ท่าน' : '—';
   document.querySelector('#seats-available').textContent = dep ? dep.seats_available + ' ที่นั่ง' : '—';
   document.querySelector('#departure-quote').value = dep?.quote || '';
   minus.disabled = !(privateDate ? raw || allRates.length : dep) || limit < 1 || count <= Number(countInput.min) || !Number.isFinite(count);
   plus.disabled = !(privateDate ? raw || allRates.length : dep) || limit < 1 || count >= limit;
-  document.querySelector('#traveler-help').textContent = dep ? 'จองได้ 1–' + limit + ' คน ตามที่นั่งว่างของรอบ' : 'เลือกวันเดินทางก่อน · จองได้ตั้งแต่ 1 คนตามที่นั่งว่าง';
+  document.querySelector('#traveler-help').textContent = dep ? 'จองได้ 1–' + limit + ' ท่าน ตามที่นั่งว่างของรอบ' : 'เลือกวันเดินทางก่อน · จองได้ตั้งแต่ 1 ท่านตามที่นั่งว่าง';
   if(privateDate){
    document.querySelector('#traveler-help').textContent=raw ? ratesOf(raw).filter(r=>r.level===privateLevel.value).map(r=>rateRange(r)).join(' / ')+(dep ? ' · กรุ๊ปส่วนตัว' : ' · จำนวนนี้ไม่มีราคา กรุณาปรับจำนวนหรือสอบถามทีมงาน') : allRates.length ? [...new Set(allRates.filter(r=>r.level===privateLevel.value).map(r=>rateRange(r)))].join(' / ')+(preview ? ' · กรุ๊ปส่วนตัว' : ' · จำนวนนี้ไม่มีราคา กรุณาปรับจำนวนหรือสอบถามทีมงาน') : 'เลือกวันที่เปิดรับจองก่อน';
    document.querySelector('#private-details').textContent=dep?.packageRate?.details || preview?.details || '';
@@ -433,7 +463,7 @@ if (departures) {
   let roomHelp = 'เลือกวันเดินทางก่อน แล้วระบุจำนวนห้องพัก';
   if (dep && !hasRooms) roomHelp = 'รอบนี้ไม่มีที่พัก จึงไม่มีค่าพักเดี่ยวเพิ่ม';
   else if (dep) {
-   roomHelp = validNumbers && validCount ? 'จัดห้องแล้ว ' + occupied + ' / ' + count + ' คน' + (occupied === count ? ' · ครบแล้ว' : occupied < count ? ' · เหลืออีก ' + (count - occupied) + ' คน' : ' · กรุณาลดจำนวนห้อง') : 'กรุณาระบุจำนวนผู้เดินทางและจำนวนห้องเป็นจำนวนเต็ม';
+   roomHelp = validNumbers && validCount ? 'จัดห้องแล้ว ' + occupied + ' / ' + count + ' ท่าน' + (occupied === count ? ' · ครบแล้ว' : occupied < count ? ' · เหลืออีก ' + (count - occupied) + ' ท่าน' : ' · กรุณาลดจำนวนห้อง') : 'กรุณาระบุจำนวนผู้เดินทางและจำนวนห้องเป็นจำนวนเต็ม';
    if (dep.single_supplement === null) roomHelp += ' · หากต้องการห้องเดี่ยว กรุณาติดต่อ LINE เพื่อให้ทีมงานจัดห้องและแจ้งราคา';
   }
   document.querySelector('#room-help').textContent = roomHelp;
@@ -447,10 +477,13 @@ if (departures) {
    if (privateDate) renderCalendar(calendar?.contains(document.activeElement) && document.activeElement.dataset.date ? '[data-date="'+document.activeElement.dataset.date+'"]' : '');
    const perPerson = dep ? dep.price_per_person : preview?.price;
    const grandTotal = format((baseTotal + supplementTotal) / 100);
-   setLive('[data-live-label]', dep ? 'ราคาของคุณ' : 'เริ่มต้น');
+   setLive('[data-live-label]', dep ? 'ราคาของคุณ' : 'ราคา');
    setLive('[data-live-price]', perPerson ? format(perPerson) : null);
-   setLive('[data-live-note]', ready ? 'ยอดรวม ' + grandTotal + ' · ' + count + ' คน' : null);
-   setLive('[data-live-mobile-label]', ready ? 'ยอดรวม ' + count + ' คน' : perPerson ? (dep ? 'ราคาของคุณ / คน' : 'เริ่มต้น / คน') : null);
+   setWas('[data-live-was]', perPerson ? regular : undefined, perPerson);
+   setWas('[data-live-mobile-was]', ready ? 0 : perPerson ? regular : undefined, perPerson);
+   setLive('[data-live-discount]', dep ? (discounted ? 'ลด ' + discountOf(dep) + '% · ประหยัด ' + format(regular - Number(dep.price_per_person)) + ' / ท่าน' : '') : null);
+   setLive('[data-live-note]', ready ? 'ยอดรวม ' + grandTotal + ' · ' + count + ' ท่าน' : null);
+   setLive('[data-live-mobile-label]', ready ? 'ยอดรวม ' + count + ' ท่าน' : perPerson ? (dep ? 'ราคาของคุณ / ท่าน' : 'เริ่มต้น / ท่าน') : null);
    setLive('[data-live-mobile-price]', ready ? grandTotal : perPerson ? format(perPerson) : null);
    bookingNext.textContent = ready ? 'ถัดไป · กรอกข้อมูลติดต่อ' : !dep ? (privateDate ? 'เลือกวันเดินทางเพื่อดูยอดจริง' : 'เลือกรอบเดินทางเพื่อดูราคา') : 'จัดห้องพักให้ครบก่อน';
    // A returning customer keeps their contact details, but the contact step only makes sense with a complete trip.
@@ -718,6 +751,34 @@ if (editor) {
  }
  programType.addEventListener('change',refreshPrivate);
  editor.querySelector('#departure-list').addEventListener('change',event=>{if(event.target.matches('[data-anytime-toggle]'))refreshDepartureModes();});
+ // Shows what customers will pay: same rounding as DepartureDiscount::price() (whole baht).
+ const money=n=>'฿'+n.toLocaleString('th-TH',{maximumFractionDigits:2});
+ const salePrice=(regular,pct)=>Math.round(Math.round(regular*(100-pct)*100)/100/100);
+ // Writes "~regular~ sale" into out; returns false when the percent or price can't be previewed yet.
+ function discountPreview(out,raw,regular,lead){
+  const pct=Number(raw);
+  if(!raw || !Number.isInteger(pct) || pct<1 || pct>90) return false;
+  if(!(regular>0)){ out.textContent='ใส่ราคาก่อนเพื่อดูราคาหลังลด '+pct+'%'; return true; }
+  const sale=salePrice(regular,pct), was=document.createElement('s');
+  was.textContent=money(regular);
+  out.replaceChildren(lead, was, ' '+money(sale)+' · ประหยัด '+money(regular-sale));
+  return true;
+ }
+ function refreshDiscounts(){
+  editor.querySelectorAll('.departure-item').forEach(item=>{
+   // Group tour: one percent for the departure.
+   const out=item.querySelector('[data-discount-preview]');
+   if(out && !discountPreview(out,item.querySelector('[data-discount-input]')?.value,Number(item.querySelector('[name$="[price_per_person]"]')?.value),'ลูกค้าจะเห็น ')) out.replaceChildren();
+   // Private package: each rate row has its own percent.
+   item.querySelectorAll('.private-rate').forEach(row=>{
+    const rowOut=row.querySelector('[data-rate-discount-preview]');
+    if(rowOut && !discountPreview(rowOut,row.querySelector('[data-rate-discount]')?.value,Number(row.querySelector('[name$="[price]"]')?.value),'')) rowOut.textContent='เว้นว่าง = ไม่ลด';
+   });
+  });
+ }
+ editor.querySelector('#departure-list').addEventListener('input',refreshDiscounts);
+ programType.addEventListener('change',refreshDiscounts);
+ refreshDiscounts();
  const flightSetList=editor.querySelector('#flight-set-list'), flightIncluded=editor.querySelector('[name=flight_included]');
  let flightCounter=Date.now()%1000000000;
  function syncFlightSets(){
@@ -781,7 +842,8 @@ if (editor) {
    const list=button.previousElementSibling;
    if(list.children.length>=30)return;
    const row=list.firstElementChild.cloneNode(true);
-   row.querySelectorAll('input,textarea').forEach(el=>el.value=el.type==='number' && el.step!=='0.01' ? '2' : '');
+   row.querySelectorAll('input,textarea').forEach(el=>el.value=el.type==='number' && el.step!=='0.01' && !el.matches('[data-rate-discount]') ? '2' : '');
+   refreshDiscounts();
    list.append(row);
   }
   if(button.hasAttribute('data-rate-remove')){const row=button.closest('.private-rate');if(row.parentNode.children.length>1)row.remove();}

@@ -44,7 +44,7 @@ class PassportsController extends Controller
                 @unlink($f['full_path']);
             }
         }
-        session()->flash($error ? 'error' : 'success', $error ?: 'อัปโหลดพาสปอร์ตผู้เดินทางคนที่ '.$number.' แล้ว');
+        session()->flash($error ? 'error' : 'success', $error ?: 'อัปโหลดพาสปอร์ตผู้เดินทางท่านที่ '.$number.' แล้ว');
         redirect_to(base_url().('booking/detail/'.$token.'#passports'));
     }
 

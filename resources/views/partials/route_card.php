@@ -4,8 +4,8 @@
  $rcTile=$route_card_size==='tile';
  $rcNoFlight=array_keys($rc['flight_states'])===[0];
  if ($rcType==='private') {
-  $rcPriceNote=trim(($rc['lowest_rate'] ? 'เมื่อไป '.people_range($rc['lowest_rate']['min'],$rc['lowest_rate']['max']).' คน' : '').($rcNoFlight ? ' · ไม่รวมตั๋ว' : ''),' ·');
-  $rcMeta=$rc['next_date'] ? 'เลือกวันได้ '.thai_date($rc['next_date']).' – '.thai_date($rc['last_date']).($rc['people'] ? ' · '.people_range(min($rc['people']),max($rc['people'])).' คน' : '') : 'สอบถามช่วงเดินทาง';
+  $rcPriceNote=trim(($rc['lowest_rate'] ? 'เมื่อไป '.people_range($rc['lowest_rate']['min'],$rc['lowest_rate']['max']).' ท่าน' : '').($rcNoFlight ? ' · ไม่รวมตั๋ว' : ''),' ·');
+  $rcMeta=$rc['next_date'] ? 'เลือกวันได้ '.thai_date($rc['next_date']).' – '.thai_date($rc['last_date']).($rc['people'] ? ' · '.people_range(min($rc['people']),max($rc['people'])).' ท่าน' : '') : 'สอบถามช่วงเดินทาง';
  } else {
   $rcPriceNote=['flight'=>'รวมตั๋วแล้ว','land'=>'ไม่รวมตั๋ว'][$rcType] ?? '';
   $rcMeta=($rcType==='flight' && $rc['airlines'] ? implode(' / ',$rc['airlines']) : $rc['total'].' โปรแกรม').($rc['next_date'] ? ' · รอบถัดไป '.thai_date($rc['next_date']) : '');

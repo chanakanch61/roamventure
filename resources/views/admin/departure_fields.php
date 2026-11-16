@@ -19,6 +19,11 @@
  <h4>ราคาต่อคนตามระดับและขนาดกรุ๊ป</h4><div class="private-rates"><?php $rates=json_decode($dep['private_rates'] ?? '[]',true) ?: [[]]; foreach ($rates as $j=>$rate) load_view('admin/private_rate',['i'=>$i,'j'=>$j,'rate'=>$rate]); ?></div>
  <button type="button" class="outline-link" data-rate-add>＋ เพิ่มระดับ / ช่วงจำนวนคน</button>
  </div>
+ <div class="departure-discount">
+  <div class="form-grid"><label data-fixed-only>ส่วนลด (%)<input type="number" name="departures[<?= $i ?>][discount_percent]" min="0" max="<?= \App\Support\DepartureDiscount::MAX_PERCENT ?>" step="1" inputmode="numeric" placeholder="0" value="<?= !empty($dep['discount_percent']) ? (int)$dep['discount_percent'] : '' ?>" data-discount-input><small>0–<?= \App\Support\DepartureDiscount::MAX_PERCENT ?> · เว้นว่างหรือ 0 = ไม่มีส่วนลด · ไม่ลดค่าพักเดี่ยว</small></label>
+  <label>ส่วนลดถึงวันที่ (ไม่บังคับ)<input type="date" name="departures[<?= $i ?>][discount_until]" value="<?= e($dep['discount_until'] ?? '') ?>"><small>หลังวันนี้กลับไปใช้ราคาปกติเอง · เว้นว่าง = ลดจนกว่าจะแก้<span data-private-only hidden> · ใช้กับส่วนลดทุกแถวในตารางราคาด้านบน</span></small></label></div>
+  <p class="fineprint" data-discount-preview data-fixed-only aria-live="polite"></p>
+ </div>
  <?php $depSetKey=$dep['flight_set_key'] ?? (!empty($dep['flight_set_id']) ? 's'.$dep['flight_set_id'] : ''); ?>
  <label data-fixed-only>ชุดเที่ยวบินของรอบนี้<select name="departures[<?= $i ?>][flight_set]" data-flight-set-select><option value="">ยังไม่เลือกชุด</option><?php foreach ($tour['flight_sets'] ?? [] as $s=>$depSet): $optionKey=$depSet['key'] ?? (!empty($depSet['id']) ? 's'.$depSet['id'] : 'n'.$s); ?><option value="<?= e($optionKey) ?>" <?= $optionKey===$depSetKey ? 'selected' : '' ?>><?= e($depSet['name']) ?></option><?php endforeach ?></select><small>สร้างชุดในส่วนเที่ยวบินด้านบน รอบที่บินเหมือนกันเลือกชุดเดียวกันได้</small></label>
  <label class="single-supplement-field">ค่าพักเดี่ยวเพิ่ม (บาท / คน / ตลอดทริป)<input type="number" name="departures[<?= $i ?>][single_supplement]" min="0" max="99999999.99" step="0.01" value="<?= e($dep['single_supplement'] ?? '') ?>" placeholder="ยังไม่กำหนด"><small>เพิ่มจากราคาปกติสำหรับผู้ที่เลือกพักเดี่ยว · 0 = ไม่คิดเพิ่ม · เว้นว่าง = ให้สอบถามทีมงานก่อน</small></label>

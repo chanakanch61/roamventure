@@ -1,0 +1,1 @@
+<?php if (!empty($item['max_discount'])): ?><span class="card-discount"><small><?= \App\Support\DepartureDiscount::label($item['card_periods'] ?? []) ?></small><?= (int)$item['max_discount'] ?>%</span><?php endif ?>

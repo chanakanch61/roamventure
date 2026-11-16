@@ -53,3 +53,38 @@ body .card-periods-heading .material-icons{font-size:18px}
 .public-dark .card-airline{border-color:#333}
 .public-dark .card-airline-text{color:#ccc}
 .public-dark .card-airline.is-plain .material-icons,.public-dark .card-airline.is-plain .card-airline-text{color:#aaa}
+
+/* Departure discounts: % badge on the card image, struck regular price beside the selling price. */
+:root{--discount:#b3261e;--discount-soft:#fbe9e7;--discount-text:#b3261e}
+.public-dark{--discount-soft:#3a1714;--discount-text:#ff9c92}
+.price-was{color:#767676;font-weight:500;text-decoration-thickness:1.5px;white-space:nowrap}
+.public-dark .price-was{color:#a3a3a3}
+.price-was-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.discount-pill{display:inline-block;padding:2px 7px;border-radius:999px;background:var(--discount);color:#fff;font-size:10px;font-weight:800;line-height:1.4;letter-spacing:.2px;vertical-align:middle}
+.card-discount{position:absolute;right:0;top:18px;z-index:1;display:flex;flex-direction:column;align-items:flex-end;padding:7px 14px 8px 16px;background:var(--discount);color:#fff;font-size:26px;font-weight:800;line-height:1;letter-spacing:-1px}
+.card-discount small{font-size:9px;font-weight:700;letter-spacing:.4px;margin-bottom:3px}
+.card-price-was{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-top:2px;font-size:13px;line-height:1.3}
+.price-save{padding:2px 6px;border-radius:3px;background:var(--discount-soft);color:var(--discount-text);font-size:10px;font-weight:700;white-space:nowrap}
+.card-bottom.has-discount strong,.row-tour-price.has-discount>strong{color:var(--discount-text)}
+.row-tour-price>.card-price-was{display:flex;font-size:14px;color:inherit}
+.card-period-row{position:relative}
+.card-period-discount{position:absolute;top:-8px;right:10px;padding:1px 7px;border-radius:999px;background:var(--discount);color:#fff;font-size:10px;font-weight:800;line-height:1.5;box-shadow:0 0 0 2px var(--discount-ring,#fff)}
+.public-dark .card-period-discount{--discount-ring:#111}
+.card-period-chips:has(.card-period-discount){padding-top:8px}
+.departure-price .price-was{display:block;font-size:11px;line-height:1.3}
+.departure-price .discount-pill{margin-right:6px}
+.departure-price b{white-space:nowrap}
+.departure-price small{display:block;font-size:10px;color:#767676}
+.panel h3 .discount-pill{margin-left:6px}
+.discount-note{color:var(--discount-text);font-size:12px;font-weight:600}
+.rate-grid b .price-was{display:block;font-size:11px;line-height:1.3}
+.rv-board-price .price-was{display:block;font-size:11px;letter-spacing:0;line-height:1.2}
+#booking .trip-booking-intro [data-live-was] .price-was{font-size:14px;margin-right:2px}
+#booking .trip-booking-intro small.booking-discount-note{margin-top:4px;color:var(--discount-text);font-weight:700}
+.trip-mobile-price{display:flex;align-items:baseline;gap:6px}
+.trip-mobile-price .price-was{font-size:11px}
+.booking-total .booking-discount-row{color:var(--discount-text);font-weight:700}
+.booking-total .booking-discount-row[hidden]{display:none}
+#booking .booking-total.has-breakdown>.booking-discount-row:not([hidden]){display:flex}
+#booking .booking-total>.booking-discount-row,#booking .booking-total>.booking-discount-row b{color:var(--discount-text)}
+.rate-grid b .discount-pill{display:inline-block;margin-top:3px;color:#fff}
