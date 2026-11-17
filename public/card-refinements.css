@@ -68,7 +68,7 @@ body .card-periods-heading .material-icons{font-size:18px}
 .card-bottom.has-discount strong,.row-tour-price.has-discount>strong{color:var(--discount-text)}
 .row-tour-price>.card-price-was{display:flex;font-size:14px;color:inherit}
 .card-period-row{position:relative}
-.card-period-discount{position:absolute;top:-8px;right:10px;padding:1px 7px;border-radius:999px;background:var(--discount);color:#fff;font-size:10px;font-weight:800;line-height:1.5;box-shadow:0 0 0 2px var(--discount-ring,#fff)}
+.card-period-discount{position:absolute;top:-8px;right:10px;padding:1px 7px;border-radius:999px;background:var(--discount);color:#fff;font-size:10px;font-weight:800;line-height:1.5;white-space:nowrap;box-shadow:0 0 0 2px var(--discount-ring,#fff)}
 .public-dark .card-period-discount{--discount-ring:#111}
 .card-period-chips:has(.card-period-discount){padding-top:8px}
 .departure-price .price-was{display:block;font-size:11px;line-height:1.3}
