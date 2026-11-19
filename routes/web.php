@@ -13,6 +13,10 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DestinationsAdminController;
 use App\Http\Controllers\GalleryAdminController;
 use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\GroupInvoiceAdminController;
+use App\Http\Controllers\GroupQuoteAdminController;
+use App\Http\Controllers\GroupTourAdminController;
+use App\Http\Controllers\GroupTourController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\HomeDestinationsAdminController;
 use App\Http\Controllers\HotelLibraryAdminController;
@@ -64,6 +68,8 @@ $page('admin/destinations/{kind}', [DestinationsAdminController::class, 'index']
 $page('admin/payment-settings', [BillingAdminController::class, 'settings']);
 $page('admin/payments/{id}', [BillingAdminController::class, 'review'])->whereNumber('id');
 $page('admin/bookings/{id}/extend', [BillingAdminController::class, 'extend'])->whereNumber('id');
+$page('admin/bookings/{id}/charges', [BillingAdminController::class, 'add_charge'])->whereNumber('id');
+$page('admin/bookings/{id}/charges/{chargeId}/delete', [BillingAdminController::class, 'remove_charge'])->whereNumber(['id', 'chargeId']);
 $page('admin/bookings/{bookingId}/passport/{number}', [PassportsController::class, 'admin'])->whereNumber(['bookingId', 'number']);
 
 $page('admin/package-levels', [PackageLevelsAdminController::class, 'index']);
@@ -110,6 +116,27 @@ $page('admin/blog/{id}/preview', [BlogAdminController::class, 'preview'])->where
 $page('admin/blog/{id}/state', [BlogAdminController::class, 'state'])->whereNumber('id');
 $page('admin/blog/{id}', [BlogAdminController::class, 'edit'])->whereNumber('id');
 
+$page('admin/group-requests', [GroupTourAdminController::class, 'requests']);
+$page('admin/group-requests/{id}', [GroupTourAdminController::class, 'request'])->whereNumber('id');
+$page('admin/group-quotes', [GroupQuoteAdminController::class, 'index']);
+$page('admin/group-quotes/new', [GroupQuoteAdminController::class, 'edit']);
+$page('admin/group-quotes/{id}/print', [GroupQuoteAdminController::class, 'print'])->whereNumber('id');
+$page('admin/group-quotes/{id}/copy', [GroupQuoteAdminController::class, 'copy'])->whereNumber('id');
+$page('admin/group-quotes/{id}/delete', [GroupQuoteAdminController::class, 'delete'])->whereNumber('id');
+$page('admin/group-quotes/{id}', [GroupQuoteAdminController::class, 'edit'])->whereNumber('id');
+$page('admin/group-invoices', [GroupInvoiceAdminController::class, 'index']);
+$page('admin/group-invoices/new', [GroupInvoiceAdminController::class, 'create']);
+$page('admin/group-invoices/templates', [GroupInvoiceAdminController::class, 'templates']);
+$page('admin/group-invoices/{id}/print', [GroupInvoiceAdminController::class, 'print'])->whereNumber('id');
+$page('admin/group-invoices/{id}/receipt', [GroupInvoiceAdminController::class, 'receipt'])->whereNumber('id');
+$page('admin/group-invoices/{id}/pay', [GroupInvoiceAdminController::class, 'pay'])->whereNumber('id');
+$page('admin/group-invoices/{id}/cancel', [GroupInvoiceAdminController::class, 'cancel'])->whereNumber('id');
+$page('admin/group-invoices/{id}', [GroupInvoiceAdminController::class, 'edit'])->whereNumber('id');
+$page('admin/group-trips', [GroupTourAdminController::class, 'trips']);
+$page('admin/group-trips/new', [GroupTourAdminController::class, 'trip']);
+$page('admin/group-trips/{id}/delete', [GroupTourAdminController::class, 'delete_trip'])->whereNumber('id');
+$page('admin/group-trips/{id}', [GroupTourAdminController::class, 'trip'])->whereNumber('id');
+
 $page('admin/gallery', [GalleryAdminController::class, 'index']);
 $page('admin/gallery/new', [GalleryAdminController::class, 'edit']);
 $page('admin/gallery/{id}/delete', [GalleryAdminController::class, 'delete'])->whereNumber('id');
@@ -146,6 +173,11 @@ $page('booking/slip/{token}/{paymentId}', [BookingController::class, 'slip'])->w
 
 $page('blog', [BlogController::class, 'index']);
 $page('blog/{slug}', [BlogController::class, 'show']);
+
+$page('grouptour', [GroupTourController::class, 'index']);
+$page('grouptour/request', [GroupTourController::class, 'submit']);
+$page('grouptour/success', [GroupTourController::class, 'success']);
+$page('grouptour/{slug}', [GroupTourController::class, 'show']);
 
 $page('gallery', [GalleryController::class, 'index']);
 $page('gallery/{id}', [GalleryController::class, 'show'])->whereNumber('id');

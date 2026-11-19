@@ -60,7 +60,7 @@ class SiteGate
         }
         $this->no_cache();
         // Exempt resolved controllers, never a URL prefix that can be forged.
-        if (in_array($class, ['admin', 'access_admin', 'banners_admin', 'billing_admin', 'blog_admin', 'destinations_admin', 'gallery_admin', 'home_destinations_admin', 'package_levels_admin', 'seo_admin', 'site_access'], true) || ($class === 'passports' && $method === 'admin')) {
+        if (in_array($class, ['admin', 'access_admin', 'banners_admin', 'billing_admin', 'blog_admin', 'destinations_admin', 'gallery_admin', 'group_tour_admin', 'group_quote_admin', 'group_invoice_admin', 'home_destinations_admin', 'package_levels_admin', 'seo_admin', 'site_access'], true) || ($class === 'passports' && $method === 'admin')) {
             return;
         }
         if ($this->viewer() || $this->staff()) {

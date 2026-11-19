@@ -2,13 +2,17 @@
 $adminMenu = app(\App\Repositories\AdminAccessRepository::class)->menu();
 $adminGroups = [
  ['ภาพรวม', ['admin']],
- ['ทัวร์และการจอง', ['admin/bookings', 'admin/tours', 'admin/destinations', 'admin/package-levels', 'admin/airlines', 'admin/vehicle-templates', 'admin/hotel-library']],
- ['เนื้อหาเว็บไซต์', ['admin/home-destinations', 'admin/banners', 'admin/seo', 'admin/gallery', 'admin/blog']],
+ ['ทัวร์และการจอง', ['admin/bookings', 'admin/group-requests', 'admin/group-quotes', 'admin/group-invoices', 'admin/tours', 'admin/destinations', 'admin/package-levels', 'admin/airlines', 'admin/vehicle-templates', 'admin/hotel-library']],
+ ['เนื้อหาเว็บไซต์', ['admin/home-destinations', 'admin/banners', 'admin/seo', 'admin/group-trips', 'admin/gallery', 'admin/blog']],
  ['ตั้งค่าและสิทธิ์', ['admin/settings', 'admin/site-access', 'admin/payment-settings', 'admin/admins', 'admin/roles']],
 ];
 $adminIcons = ['admin'=>'space_dashboard', 'admin/bookings'=>'event_note', 'admin/tours'=>'luggage', 'admin/destinations'=>'public', 'admin/package-levels'=>'hotel', 'admin/airlines'=>'flight', 'admin/vehicle-templates'=>'directions_bus', 'admin/hotel-library'=>'king_bed', 'admin/home-destinations'=>'explore', 'admin/banners'=>'view_carousel', 'admin/seo'=>'travel_explore', 'admin/gallery'=>'photo_library', 'admin/blog'=>'edit_note', 'admin/settings'=>'settings', 'admin/payment-settings'=>'account_balance_wallet', 'admin/admins'=>'manage_accounts', 'admin/roles'=>'admin_panel_settings'];
 $adminLabels = ['admin/destinations'=>'โซน ประเทศ และเส้นทาง', 'admin/home-destinations'=>'จุดหมายแนะนำ', 'admin/gallery'=>'แกลเลอรี', 'admin/blog'=>'บทความ'];
 $adminIcons['admin/site-access']='lock';
+$adminIcons['admin/group-requests']='groups';
+$adminIcons['admin/group-trips']='workspace_premium';
+$adminIcons['admin/group-quotes']='request_quote';
+$adminIcons['admin/group-invoices']='receipt_long';
 $adminPath = trim(uri_string(), '/');
 $adminActive = null;
 foreach ($adminMenu as $url=>$item) {

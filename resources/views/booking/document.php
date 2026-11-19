@@ -3,6 +3,9 @@ $receipt=$payment ? json_decode($payment['receipt_snapshot'],true) : null;
 $snap=$receipt ? $receipt['invoice'] : json_decode($invoice['snapshot'],true);
 $b=$snap['booking']; $seller=$snap['seller'];
 $singleRooms=$b['single_rooms'] ?? ($b['room_type']==='single' ? $b['traveler_count'] : 0);
+// Merged extra charges: a receipt shows them as they were when it was issued; the invoice shows them as they are now.
+$extraCharges=$receipt ? ($receipt['charges'] ?? []) : app(\App\Repositories\BillingRepository::class)->charges($booking['id']);
+$billTotal=$receipt ? ($receipt['bill_total'] ?? $b['total_price']) : $invoice['total_amount'];
 $company=trim($settings['company_name'] ?? '') ?: (($seller['company_name'] ?? '') ?: 'RoamVenture');
 ?>
 <section class="container billing-page invoice-page">
@@ -52,9 +55,10 @@ $company=trim($settings['company_name'] ?? '') ?: (($seller['company_name'] ?? '
    <tbody>
     <tr><th scope="row">ค่าทัวร์<span><?= !empty($b['package_snapshot']) ? 'แพ็คเกจส่วนตัว · '.e((json_decode($b['package_snapshot'],true)['level'] ?? '')) : 'ตามโปรแกรมการเดินทาง' ?><?= isset($b['flight_included']) ? ' · '.($b['flight_included'] ? 'รวมตั๋วเครื่องบิน' : 'ไม่รวมตั๋วเครื่องบิน') : '' ?></span></th><td><?= (int)$b['traveler_count'] ?> ท่าน</td><td><?= money($b['price_per_person']) ?></td><td><?= money($b['price_per_person']*$b['traveler_count']) ?></td></tr>
     <tr><th scope="row">ค่าพักเดี่ยวเพิ่ม</th><td><?= (int)$singleRooms ?> ห้อง</td><td><?= $singleRooms>0 ? money($b['single_supplement']) : '—' ?></td><td><?= money($b['supplement_total']) ?></td></tr>
+    <?php foreach ($extraCharges as $c): ?><tr><th scope="row"><?= e($c['description']) ?><span>ค่าใช้จ่ายเพิ่มเติม</span></th><td><?= e(rtrim(rtrim(number_format((float) $c['qty'], 2, '.', ''), '0'), '.').' '.$c['unit']) ?></td><td><?= money($c['price']) ?></td><td><?= money($c['amount']) ?></td></tr><?php endforeach ?>
    </tbody>
    <tfoot class="invoice-summary">
-    <tr class="invoice-grand-total"><th scope="row" colspan="3">ยอดรวมทั้งสิ้น<small>ยอดรวมของการจอง</small></th><td>฿<?= money($b['total_price']) ?></td></tr>
+    <tr class="invoice-grand-total"><th scope="row" colspan="3">ยอดรวมทั้งสิ้น<small>ยอดรวมของการจอง</small></th><td>฿<?= money($billTotal) ?></td></tr>
     <?php if ($payment): ?><tr class="receipt-total"><th scope="row" colspan="3">รับชำระครั้งนี้</th><td>฿<?= money($receipt['amount']) ?></td></tr><?php endif ?>
    </tfoot>
   </table>

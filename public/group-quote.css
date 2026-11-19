@@ -1,0 +1,53 @@
+/* Back-office quotation form (/admin/group-quotes). */
+.gq-items{width:100%;border-collapse:collapse;table-layout:fixed;min-width:560px}
+.gq-items col.gq-c-qty,.gq-items col.gq-c-unit{width:72px}
+.gq-items col.gq-c-price{width:110px}
+.gq-items col.gq-c-amount{width:120px}
+.gq-items col.gq-c-del{width:36px}
+.gq-items th{font-size:12px;text-align:left;padding:8px 6px;white-space:nowrap}
+.gq-items td{padding:6px;vertical-align:middle}
+.gq-items input{width:100%;min-width:0;margin:0;padding-inline:8px}
+.gq-items .gq-num{text-align:right}
+.gq-items td[data-gq-amount]{white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}
+.gq-items td:last-child{width:36px;text-align:center}
+.gq-add{margin-top:12px}
+.gq-summary dd{text-align:right;font-variant-numeric:tabular-nums}
+.gq-summary dd b{font-size:18px}
+.gq-totals label[hidden]{display:none}
+.gq-quotes{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:8px}
+.gq-quotes li{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1px solid #e3e3e3;border-radius:10px}
+.gq-quotes small{display:block;color:#888}
+.gr-dates{border:1px solid #e3e3e3;border-radius:10px;padding:12px 14px 14px;margin:0;min-width:0}
+.gr-dates legend{font-weight:600;padding:0 6px}
+.gr-dates small{display:block;color:#888;font-size:12px;line-height:1.6}
+.gr-dates .form-grid{margin-bottom:10px}
+.gq-summary [hidden]{display:none}
+.gq-check{display:flex!important;align-items:center;gap:8px;font-weight:600}
+.gq-check input{width:18px;height:18px;margin:0}
+.gq-totals label small{display:block;color:#888;font-size:12px;line-height:1.6;margin-top:4px}
+.gq-items td[data-gq-amount] small{display:block;font-weight:400;color:#888;font-size:11px}
+.gq-hint{display:block;color:#888;font-size:12px;line-height:1.6;margin-top:-6px}
+.gq-hint[hidden],.gq-check[hidden]{display:none!important}
+.gi-presets{flex-wrap:wrap;align-items:center;gap:8px}
+#gi-form fieldset[disabled] input,#gi-form fieldset[disabled] select,#gi-form fieldset[disabled] textarea{background:#f6f6f6;color:#555}
+.gi-items{min-width:640px}
+.gi-items col.gi-c-disb{width:76px}
+.gi-items td.gi-disb{text-align:center}
+.gi-items td.gi-disb input{width:18px;height:18px}
+#gi-charges .form-grid,#gi-charges .gq-check{margin-top:12px}
+#gi-charges [hidden]{display:none!important}
+.admin-two-col.gi-wide{grid-template-columns:minmax(0,1fr)}
+.gi-items col:first-child{min-width:240px}
+.gi-items td.gi-desc{min-width:240px}
+.gi-items td.gi-desc select{margin:0;min-height:40px}
+.gi-items td.gi-desc input{margin-top:6px}
+.gi-items col.gi-c-move{width:56px}
+.gi-items td.gi-move{white-space:nowrap;text-align:center}
+.gi-items td.gi-move button{padding:2px 5px;font-size:14px}
+#gi-templates [hidden],#gi-charges input[hidden]{display:none!important}
+.gi-line select{min-height:42px}
+.gi-line [hidden]{display:none!important}
+.gi-line-nums{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:700px){.gi-line-nums{grid-template-columns:1fr 1fr}}
+#extra-charges h3{margin-top:22px;margin-bottom:8px}
+#extra-charges tfoot th{text-align:left}

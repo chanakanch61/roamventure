@@ -881,7 +881,16 @@ return $this->render('detail', ['title' => 'ตัวอย่าง: '.$tour['t
             redirect_to(base_url().('admin/bookings/'.$id));
         }
 
-        return $this->render('admin/booking', ['title' => $booking['reference'], 'booking' => $booking, 'departure' => $booking['departure_id'] ? $this->trips->departure($booking['departure_id']) : null], true);
+        return $this->render('admin/booking', [
+            'title' => $booking['reference'],
+            'booking' => $booking,
+            'departure' => $booking['departure_id'] ? $this->trips->departure($booking['departure_id']) : null,
+            // Invoices of costs outside the tour price (visa fees, sundries); made under /admin/group-invoices.
+            'extra_invoices' => $this->access->can('groups.manage') ? $this->group_invoices->for_booking((int) $booking['id']) : null,
+            'booking_charges' => $this->billing->charges((int) $booking['id']),
+            'item_templates' => $this->group_invoices->templates(),
+            'group_quote_page' => true,
+        ], true);
     }
 
     public function site_access()

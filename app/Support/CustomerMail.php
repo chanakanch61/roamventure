@@ -38,6 +38,65 @@ class CustomerMail
         });
     }
 
+    /** Confirms a charter-group request from /grouptour. Email is optional on that form, so this is skipped without one. */
+    public function group_request_received(array $r, array $settings): void
+    {
+        $to = trim((string) ($r['email'] ?? ''));
+        if ($to === '' || ! filter_var($to, FILTER_VALIDATE_EMAIL) || config('mail.default') === 'array') {
+            return;
+        }
+        // Own mailbox (GROUPTOUR_MAIL_* in .env): never falls back to the booking mailer.
+        $transport = (string) config('mail.mailers.grouptour.transport');
+        $from = trim((string) config('mail.grouptour_from.address'));
+        if ($transport === '' || ($transport === 'smtp' && ! config('mail.mailers.grouptour.host')) || ! filter_var($from, FILTER_VALIDATE_EMAIL)) {
+            Log::info('Group tour email skipped for '.$r['reference'].': GROUPTOUR_MAIL_* is not configured');
+
+            return;
+        }
+        $vars = $this->group_vars($r, $settings);
+        $subject = 'ได้รับคำขอจัดกรุ๊ปแล้ว · '.$r['reference'].' '.$r['destination'];
+
+        app()->terminating(function () use ($to, $r, $settings, $vars, $subject, $from) {
+            try {
+                Mail::mailer('grouptour')->send(['html' => 'emails/group_request_received', 'text' => 'emails/group_request_received_text'], $vars, function (Message $m) use ($to, $r, $settings, $subject, $from) {
+                    $m->from($from, (string) config('mail.grouptour_from.name'))->to($to, $r['contact_name'])->subject($subject);
+                    $reply = trim((string) ($settings['email'] ?? ''));
+                    if ($reply !== '' && filter_var($reply, FILTER_VALIDATE_EMAIL)) {
+                        $m->replyTo($reply, ($settings['company_name'] ?? '') ?: 'RoamVenture');
+                    }
+                });
+            } catch (Throwable $e) {
+                Log::warning('Customer email failed for '.$r['reference'].': '.$e->getMessage());
+            }
+        });
+    }
+
+    public function group_vars(array $r, array $settings): array
+    {
+        $groups = \App\Repositories\GroupTourRepository::class;
+        $lineId = trim((string) ($settings['line_id'] ?? ''));
+        $dates = $r['date_from'] ? thai_date($r['date_from']).($r['date_to'] ? ' – '.thai_date($r['date_to']) : '') : '';
+
+        return [
+            'r' => $r,
+            'brand' => ($settings['company_name'] ?? '') ?: 'RoamVenture',
+            'logo_png' => $this->white_logo(branding_path($settings, 'logo_navbar_desktop')),
+            'group_type' => $groups::group_types()[$r['group_type']] ?? $r['group_type'],
+            'travelers' => (int) $r['adults'].' ผู้ใหญ่'.((int) $r['children'] ? ' · '.(int) $r['children'].' เด็ก' : ''),
+            'when' => trim($dates.($dates && $r['date_note'] ? ' · ' : '').$r['date_note']),
+            'budget' => $groups::budgets()[$r['budget']] ?? '',
+            'hotel' => $groups::hotel_levels()[$r['hotel_level']] ?? '',
+            'services' => implode(', ', $groups::service_labels((string) $r['services'])),
+            'line_id' => $lineId,
+            'line_url' => $lineId ? tour_line_url($lineId, 'ขอติดตามคำขอจัดกรุ๊ปเหมา เลขที่ '.$r['reference']) : '',
+            'phone' => trim((string) ($settings['phone'] ?? '')),
+            'contact_email' => trim((string) ($settings['email'] ?? '')),
+            'license' => tour_license($settings),
+            'site_url' => base_url(),
+            'past_groups_url' => base_url().'grouptour#past-groups',
+        ];
+    }
+
     /** Everything the template needs, worked out up front so the view stays simple. */
     public function booking_vars(array $b, array $settings): array
     {

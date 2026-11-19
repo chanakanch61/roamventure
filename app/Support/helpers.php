@@ -314,6 +314,7 @@ function seo_pages()
         'land' => ['label' => 'ทัวร์ไม่รวมตั๋ว', 'path' => 'land-tours'],
         'private' => ['label' => 'แพ็คเกจส่วนตัว', 'path' => 'packages'],
         'gallery' => ['label' => 'แกลเลอรี', 'path' => 'gallery', 'title' => 'Gallery • บันทึกการเดินทาง · RoamVenture', 'description' => seo_default_description(), 'image' => 'public/images/hero.jpg'],
+        'grouptour' => ['label' => 'รับจัดกรุ๊ปเหมา', 'path' => 'grouptour', 'title' => 'รับจัดกรุ๊ปเหมา ทัวร์ส่วนตัวสำหรับองค์กรและหมู่คณะ | RoamVenture', 'description' => 'รับจัดกรุ๊ปเหมาและทัวร์ส่วนตัวสำหรับบริษัท สัมมนา ครอบครัว โรงเรียน และสมาคม ออกแบบโปรแกรม ที่พัก รถ ไกด์ และตั๋วเครื่องบินตามงบ ส่งรายละเอียดกรุ๊ปเพื่อรับใบเสนอราคา พร้อมดูผลงานกรุ๊ปที่ผ่านมา', 'image' => 'public/images/story.jpg'],
         'blog' => ['label' => 'บทความ', 'path' => 'blog', 'title' => 'Blog · เรื่องเล่าระหว่างทาง · RoamVenture', 'description' => 'แรงบันดาลใจ จุดหมาย และเคล็ดลับเตรียมตัวออกเดินทางจาก RoamVenture', 'image' => 'public/images/hero.jpg'],
         'about' => ['label' => 'เกี่ยวกับเรา', 'path' => 'aboutus', 'title' => 'เกี่ยวกับเรา | รู้จัก RoamVenture และรูปแบบการเดินทาง', 'description' => 'รู้จัก RoamVenture บริการทัวร์รวมตั๋ว ทัวร์ไม่รวมตั๋ว และแพ็คเกจส่วนตัว เลือกวันเดินทางและบริการที่เหมาะกับคุณ พร้อมขั้นตอนการจองและคำตอบก่อนออกเดินทาง', 'image' => 'public/images/story.jpg'],
         'contact' => ['label' => 'ติดต่อเรา', 'path' => 'contactus', 'title' => 'ติดต่อเรา | สอบถามทัวร์และแพ็คเกจส่วนตัว RoamVenture', 'description' => 'ติดต่อ RoamVenture เพื่อสอบถามทัวร์ แพ็คเกจส่วนตัว และคำขอจอง ดูช่องทางติดต่อ พร้อมเครื่องมือเตรียมข้อความวางแผนทริปผ่าน LINE หรืออีเมล', 'image' => 'public/images/hero.jpg'],
@@ -596,15 +597,63 @@ function tracking_context($settings, $view, $data, $controller)
     if (! $config['enabled'] || $private) {
         return null;
     }
+    $leadView = ($view === 'tracking_success' && $controller === 'home') || ($view === 'grouptour/success' && $controller === 'group_tour');
     $context = ['page_type' => $view === 'detail' ? 'tour' : (in_array($view, ['home', 'tours', 'destination', 'tracking_success'], true) ? $view : 'content')];
     if ($view === 'detail' && ! empty($data['tour'])) {
         $tour = $data['tour'];
         $context['items'] = [['item_id' => (string) $tour['code'], 'item_name' => $tour['title'], 'item_category' => $tour['program_type'] ?? 'fixed']];
     }
     $config['context'] = $context;
-    if ($view === 'tracking_success' && ! empty($data['tracking_lead'])) {
+    if ($leadView && ! empty($data['tracking_lead'])) {
         $config['lead'] = $data['tracking_lead'];
     }
 
     return $config;
 }
+
+/** Amount in Thai words as printed on quotations, e.g. 1250.50 → หนึ่งพันสองร้อยห้าสิบบาทห้าสิบสตางค์. */
+function thai_baht_text($amount)
+{
+    $amount = round(abs((float) $amount), 2);
+    $baht = (int) floor($amount);
+    $satang = (int) round(($amount - $baht) * 100);
+    if ($satang === 100) {
+        $baht++;
+        $satang = 0;
+    }
+    $words = function (int $n, bool $afterHigher = false) use (&$words): string {
+        if ($n === 0) {
+            return '';
+        }
+        if ($n >= 1000000) {
+            return $words(intdiv($n, 1000000), $afterHigher).'ล้าน'.$words($n % 1000000, true);
+        }
+        $digits = ['', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า'];
+        $places = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน'];
+        $text = '';
+        $s = (string) $n;
+        $len = strlen($s);
+        for ($i = 0; $i < $len; $i++) {
+            $d = (int) $s[$i];
+            $place = $len - $i - 1;
+            if ($d === 0) {
+                continue;
+            }
+            if ($place === 1 && $d === 1) {
+                $text .= 'สิบ';
+            } elseif ($place === 1 && $d === 2) {
+                $text .= 'ยี่สิบ';
+            } elseif ($place === 0 && $d === 1 && ($len > 1 || $afterHigher)) {
+                $text .= 'เอ็ด';
+            } else {
+                $text .= $digits[$d].$places[$place];
+            }
+        }
+
+        return $text;
+    };
+    $text = ($baht ? $words($baht) : 'ศูนย์').'บาท';
+
+    return $text.($satang ? $words($satang).'สตางค์' : 'ถ้วน');
+}
+

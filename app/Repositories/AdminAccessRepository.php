@@ -72,12 +72,12 @@ class AdminAccessRepository
     {
         $controller = strtolower($controller);
         $method = strtolower($method);
-        $map = ['gallery_admin' => 'gallery.manage', 'blog_admin' => 'blog.manage', 'package_levels_admin' => 'packages.manage', 'airlines_admin' => 'tours.manage', 'vehicle_templates_admin' => 'tours.manage', 'hotel_library_admin' => 'tours.manage', 'destinations_admin' => 'destinations.manage', 'home_destinations_admin' => 'home.manage', 'banners_admin' => 'banners.manage', 'seo_admin' => 'seo.manage', 'passports' => 'bookings.manage'];
+        $map = ['gallery_admin' => 'gallery.manage', 'group_tour_admin' => 'groups.manage', 'group_quote_admin' => 'groups.manage', 'group_invoice_admin' => 'groups.manage', 'blog_admin' => 'blog.manage', 'package_levels_admin' => 'packages.manage', 'airlines_admin' => 'tours.manage', 'vehicle_templates_admin' => 'tours.manage', 'hotel_library_admin' => 'tours.manage', 'destinations_admin' => 'destinations.manage', 'home_destinations_admin' => 'home.manage', 'banners_admin' => 'banners.manage', 'seo_admin' => 'seo.manage', 'passports' => 'bookings.manage'];
         if (isset($map[$controller])) {
             return $map[$controller];
         }
         if ($controller === 'billing_admin') {
-            return $method === 'settings' ? 'payments.manage' : (in_array($method, ['review', 'extend'], true) ? 'bookings.manage' : false);
+            return $method === 'settings' ? 'payments.manage' : (in_array($method, ['review', 'extend', 'add_charge', 'remove_charge'], true) ? 'bookings.manage' : false);
         }
         if ($controller === 'access_admin') {
             return in_array($method, ['roles', 'role', 'delete_role'], true) ? 'roles.manage' : (in_array($method, ['index', 'edit'], true) ? 'admins.manage' : false);
@@ -102,6 +102,6 @@ class AdminAccessRepository
 
     public function menu()
     {
-        return ['admin' => ['◫', 'ภาพรวม', null], 'admin/tours' => ['▧', 'โปรแกรมทัวร์', 'tours.manage'], 'admin/gallery' => ['&#9639;', 'Gallery', 'gallery.manage'], 'admin/blog' => ['✎', 'Blog', 'blog.manage'], 'admin/package-levels' => ['◇', 'ระดับบริการ', 'packages.manage'], 'admin/airlines' => ['✈', 'สายการบิน', 'tours.manage'], 'admin/vehicle-templates' => ['▣', 'Template รถ', 'tours.manage'], 'admin/hotel-library' => ['▤', 'คลังโรงแรม', 'tours.manage'], 'admin/destinations' => ['⌖', 'Zone / Country / Route', 'destinations.manage'], 'admin/bookings' => ['▤', 'คำขอจอง', 'bookings.manage'], 'admin/home-destinations' => ['⌖', 'จุดหมายแนะนำหน้าแรก', 'home.manage'], 'admin/banners' => ['▧', 'แบนเนอร์เว็บไซต์', 'banners.manage'], 'admin/seo' => ['⌕', 'Meta Tag หน้าเว็บ', 'seo.manage'], 'admin/settings' => ['⚙', 'ตั้งค่าเว็บไซต์', 'settings.manage'], 'admin/site-access' => ['⚿', 'จำกัดการเข้าชม', 'settings.manage'], 'admin/payment-settings' => ['฿', 'ช่องทางรับชำระ', 'payments.manage'], 'admin/admins' => ['♙', 'จัดการแอดมิน', 'admins.manage'], 'admin/roles' => ['⚿', 'บทบาทและสิทธิ์', 'roles.manage']];
+        return ['admin' => ['◫', 'ภาพรวม', null], 'admin/tours' => ['▧', 'โปรแกรมทัวร์', 'tours.manage'], 'admin/gallery' => ['&#9639;', 'Gallery', 'gallery.manage'], 'admin/blog' => ['✎', 'Blog', 'blog.manage'], 'admin/package-levels' => ['◇', 'ระดับบริการ', 'packages.manage'], 'admin/airlines' => ['✈', 'สายการบิน', 'tours.manage'], 'admin/vehicle-templates' => ['▣', 'Template รถ', 'tours.manage'], 'admin/hotel-library' => ['▤', 'คลังโรงแรม', 'tours.manage'], 'admin/destinations' => ['⌖', 'Zone / Country / Route', 'destinations.manage'], 'admin/bookings' => ['▤', 'คำขอจอง', 'bookings.manage'], 'admin/group-requests' => ['◎', 'คำขอจัดกรุ๊ปเหมา', 'groups.manage'], 'admin/group-quotes' => ['◎', 'ใบเสนอราคากรุ๊ป', 'groups.manage'], 'admin/group-invoices' => ['◎', 'ใบแจ้งหนี้ / ใบเสร็จ', 'groups.manage'], 'admin/group-trips' => ['◎', 'ผลงานกรุ๊ปเหมา', 'groups.manage'], 'admin/home-destinations' => ['⌖', 'จุดหมายแนะนำหน้าแรก', 'home.manage'], 'admin/banners' => ['▧', 'แบนเนอร์เว็บไซต์', 'banners.manage'], 'admin/seo' => ['⌕', 'Meta Tag หน้าเว็บ', 'seo.manage'], 'admin/settings' => ['⚙', 'ตั้งค่าเว็บไซต์', 'settings.manage'], 'admin/site-access' => ['⚿', 'จำกัดการเข้าชม', 'settings.manage'], 'admin/payment-settings' => ['฿', 'ช่องทางรับชำระ', 'payments.manage'], 'admin/admins' => ['♙', 'จัดการแอดมิน', 'admins.manage'], 'admin/roles' => ['⚿', 'บทบาทและสิทธิ์', 'roles.manage']];
     }
 }

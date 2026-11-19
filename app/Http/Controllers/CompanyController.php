@@ -163,6 +163,12 @@ class CompanyController extends Controller
         foreach ($this->places->all() as $node) {
             $urls[] = destination_url($node);
         }
+        $urls[] = base_url().'grouptour';
+        if (Schema::hasTable('group_trips')) {
+            foreach (DB::table('group_trips')->select('slug')->where('status', 'published')->get()->all() as $trip) {
+                $urls[] = base_url().'grouptour/'.rawurlencode($trip['slug']);
+            }
+        }
         $urls[] = base_url().'gallery';
         if (Schema::hasTable('gallery_albums')) {
             foreach (DB::table('gallery_albums')->select('id')->where('status', 'published')->get()->all() as $album) {
@@ -185,6 +191,6 @@ class CompanyController extends Controller
 
     public function robots()
     {
-        return response("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /booking\nDisallow: /billing_admin\nDisallow: /passports\nSitemap: ".base_url()."sitemap.xml\n", 200, ['Content-Type' => 'text/plain; charset=utf-8']);
+        return response("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /booking\nDisallow: /billing_admin\nDisallow: /passports\nDisallow: /grouptour/success\nDisallow: /grouptour/request\nSitemap: ".base_url()."sitemap.xml\n", 200, ['Content-Type' => 'text/plain; charset=utf-8']);
     }
 }

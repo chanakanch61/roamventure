@@ -42,6 +42,48 @@ class BillingAdminController extends Controller
         redirect_to(base_url().('admin/bookings/'.(int) $id));
     }
 
+    /** Adds a line (visa fee, extra night ...) to the booking's own bill, paid through the booking's payment page. */
+    public function add_charge($id)
+    {
+        $this->post_only();
+        $text = function (string $key): string {
+            $v = request()->post($key);
+
+            return is_string($v) ? trim($v) : '';
+        };
+        $number = fn (string $key) => str_replace([',', ' '], '', $text($key));
+        $description = $text('description');
+        $unit = $text('unit');
+        $qty = $number('qty');
+        $price = $number('price');
+        $hours = filter_var($text('hours'), FILTER_VALIDATE_INT);
+        $error = '';
+        if ($description === '' || mb_strlen($description) > 300 || mb_strlen($unit) > 30) {
+            $error = 'กรุณากรอกชื่อรายการ (ไม่เกิน 300 ตัวอักษร) และหน่วยไม่เกิน 30 ตัวอักษร';
+        } elseif (! is_numeric($qty) || (float) $qty <= 0 || (float) $qty > 99999) {
+            $error = 'จำนวนต้องมากกว่า 0';
+        } elseif (! is_numeric($price) || (float) $price <= 0 || (float) $price > 99999999) {
+            $error = 'ราคาต่อหน่วยต้องมากกว่า 0';
+        } elseif (! $hours || $hours < 1 || $hours > 720) {
+            $error = 'กำหนดชำระ 1–720 ชั่วโมง';
+        }
+        if (! $error) {
+            $qty = round((float) $qty, 2);
+            $price = round((float) $price, 2);
+            $error = $this->billing->add_charge((int) $id, ['description' => $description, 'qty' => $qty, 'unit' => $unit, 'price' => $price, 'amount' => round($qty * $price, 2)], $hours);
+        }
+        session()->flash($error ? 'error' : 'success', $error ?: 'เพิ่มค่าใช้จ่ายรวมในยอดการจองแล้ว ลูกค้าชำระผ่านหน้ารายละเอียดการจองได้ทันที');
+        redirect_to(base_url().'admin/bookings/'.(int) $id.'#extra-charges');
+    }
+
+    public function remove_charge($id, $chargeId)
+    {
+        $this->post_only();
+        $error = $this->billing->remove_charge((int) $id, (int) $chargeId);
+        session()->flash($error ? 'error' : 'success', $error ?: 'ลบรายการค่าใช้จ่ายแล้ว');
+        redirect_to(base_url().'admin/bookings/'.(int) $id.'#extra-charges');
+    }
+
     public function settings()
     {
         $errors = [];

@@ -58,6 +58,76 @@ class BillingRepository
         return DB::table('invoices')->where('booking_id', $id)->first();
     }
 
+    /** Extra costs merged into this booking's bill (visa fee, extra night ...), oldest first. */
+    public function charges($id)
+    {
+        return DB::table('booking_charges')->where('booking_id', $id)->orderBy('id')->get()->all();
+    }
+
+    /** What the booking's bill comes to in cents: the tour price plus the merged charges. */
+    public function bill_total($b)
+    {
+        $extra = DB::table('booking_charges')->where('booking_id', $b['id'])->sum('amount');
+
+        return $this->cents($b['total_price']) + $this->cents($extra);
+    }
+
+    /**
+     * Adds a line to the booking's bill. The invoice total follows, so the customer pays it through the usual
+     * payment page. When the bill was settled or its due date is near, payment is given until $hours from now
+     * (never past the departure day), as extend() does.
+     */
+    public function add_charge($id, array $item, $hours = 72)
+    {
+        $b = $this->lock($id);
+        if (! $b || $b['status'] === 'cancelled') {
+            return $this->fail('เพิ่มค่าใช้จ่ายได้เฉพาะการจองที่ยังไม่ยกเลิก');
+        }
+        $actor = session('admin_id') ?: null;
+        $this->soft(fn () => DB::table('booking_charges')->insert($item + ['booking_id' => $id, 'created_by' => $actor, 'created_at' => date('Y-m-d H:i:s')]));
+        $invoice = $this->invoice($id);
+        if ($invoice) {
+            $data = ['total_amount' => $this->decimal($this->bill_total($b))];
+            $due = min(date('Y-m-d H:i:s', time() + $hours * 3600), $b['start_date'].' 23:59:59');
+            if ($this->paid($id) > 0) {
+                if ($invoice['balance_due_at'] < $due) {
+                    $data['balance_due_at'] = $due;
+                }
+            } elseif ($invoice['payment_due_at'] < $due) {
+                $data += ['payment_due_at' => $due, 'balance_due_at' => max($invoice['balance_due_at'], $due)];
+            }
+            $this->soft(fn () => DB::table('invoices')->where('id', $invoice['id'])->update($data));
+        }
+        $this->event($id, 'เพิ่มค่าใช้จ่ายรวมในการจอง: '.$item['description'].' ฿'.money($item['amount']), $actor);
+
+        return $this->finish();
+    }
+
+    /** Removes a merged line, unless that would bring the bill below what was already paid or a payment is in progress. */
+    public function remove_charge($id, $chargeId)
+    {
+        $b = $this->lock($id);
+        $c = DB::table('booking_charges')->where('booking_id', $id)->where('id', $chargeId)->first();
+        if (! $b || ! $c) {
+            return $this->fail('ไม่พบรายการค่าใช้จ่ายนี้');
+        }
+        $s = $this->state($b);
+        if ($s['active']) {
+            return $this->fail('มีรายการชำระที่กำลังดำเนินการหรือรอตรวจสลิปอยู่ กรุณาจัดการรายการนั้นก่อน');
+        }
+        $total = $this->bill_total($b) - $this->cents($c['amount']);
+        if ($total < $s['paid']) {
+            return $this->fail('ลบไม่ได้ เพราะยอดรวมจะต่ำกว่ายอดที่ลูกค้าชำระแล้ว');
+        }
+        $this->soft(fn () => DB::table('booking_charges')->where('id', $c['id'])->delete());
+        if ($s['invoice']) {
+            $this->soft(fn () => DB::table('invoices')->where('id', $s['invoice']['id'])->update(['total_amount' => $this->decimal($total)]));
+        }
+        $this->event($id, 'ลบค่าใช้จ่ายรวมในการจอง: '.$c['description'].' ฿'.money($c['amount']), session('admin_id') ?: null);
+
+        return $this->finish();
+    }
+
     public function paid($id)
     {
         $r = DB::table('payments')->selectRaw('SUM(reported_amount) AS paid')->where('booking_id', $id)->where('status', 'approved')->first();
@@ -98,7 +168,7 @@ class BillingRepository
         $this->soft(fn () => DB::table('bookings')->where('id', $b['id'])->update(['access_token' => $token]));
         $deposit = min($this->cents($b['total_price']), $this->cents($tour['deposit_per_person'] ?? 0) * (int) $b['traveler_count']);
         $actor = session('admin_id') ?: null;
-        $invoice = ['booking_id' => $b['id'], 'reference' => 'INV-'.date('Ymd').'-'.str_pad($b['id'], 6, '0', STR_PAD_LEFT), 'snapshot' => json_encode(['booking' => $b, 'seller' => $this->account()], JSON_UNESCAPED_UNICODE), 'total_amount' => $b['total_price'], 'deposit_amount' => $this->decimal($deposit), 'deposit_enabled' => ! empty($dep['deposit_enabled']) && $deposit > 0 ? 1 : 0, 'deposit_cutoff_days' => $dep['deposit_cutoff_days'] ?? 30, 'payment_due_at' => $due, 'balance_due_at' => $balance, 'issued_at' => $now, 'issued_by' => $actor];
+        $invoice = ['booking_id' => $b['id'], 'reference' => 'INV-'.date('Ymd').'-'.str_pad($b['id'], 6, '0', STR_PAD_LEFT), 'snapshot' => json_encode(['booking' => $b, 'seller' => $this->account()], JSON_UNESCAPED_UNICODE), 'total_amount' => $this->decimal($this->bill_total($b)), 'deposit_amount' => $this->decimal($deposit), 'deposit_enabled' => ! empty($dep['deposit_enabled']) && $deposit > 0 ? 1 : 0, 'deposit_cutoff_days' => $dep['deposit_cutoff_days'] ?? 30, 'payment_due_at' => $due, 'balance_due_at' => $balance, 'issued_at' => $now, 'issued_by' => $actor];
         $this->soft(fn () => DB::table('invoices')->insert($invoice));
         $this->event($b['id'], 'ออกใบแจ้งหนี้และเปิดรับการชำระเงิน', $actor);
     }
@@ -263,7 +333,7 @@ class BillingRepository
             $data['channel'] = $channel;
             $data['transferred_at'] = $time->format('Y-m-d H:i:s');
             $data['receipt_reference'] = 'RCT-'.date('Ymd').'-'.str_pad($p['id'], 6, '0', STR_PAD_LEFT);
-            $data['receipt_snapshot'] = json_encode(['invoice' => json_decode($s['invoice']['snapshot'], true), 'invoice_reference' => $s['invoice']['reference'], 'payment_reference' => $p['reference'], 'amount' => $p['reported_amount'], 'channel' => $data['channel'], 'transferred_at' => $data['transferred_at'], 'issued_at' => $now], JSON_UNESCAPED_UNICODE);
+            $data['receipt_snapshot'] = json_encode(['invoice' => json_decode($s['invoice']['snapshot'], true), 'invoice_reference' => $s['invoice']['reference'], 'charges' => $this->charges($id), 'bill_total' => $s['invoice']['total_amount'], 'payment_reference' => $p['reference'], 'amount' => $p['reported_amount'], 'channel' => $data['channel'], 'transferred_at' => $data['transferred_at'], 'issued_at' => $now], JSON_UNESCAPED_UNICODE);
         }
         $this->soft(fn () => DB::table('payments')->where('id', $p['id'])->update($data));
         if ($decision === 'reject') {

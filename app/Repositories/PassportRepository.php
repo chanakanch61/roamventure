@@ -17,7 +17,8 @@ class PassportRepository
         }
         $i = $s['invoice'];
 
-        return $s['remaining'] === 0 || (! empty($i['deposit_enabled']) && $this->billing->cents($i['deposit_amount']) > 0 && $s['paid'] >= $this->billing->cents($i['deposit_amount']));
+        // Extra charges merged into the bill (visa fee ...) do not hold back passports once the tour itself is paid.
+        return $s['remaining'] === 0 || $s['paid'] >= $this->billing->cents($b['total_price']) || (! empty($i['deposit_enabled']) && $this->billing->cents($i['deposit_amount']) > 0 && $s['paid'] >= $this->billing->cents($i['deposit_amount']));
     }
 
     public function documents($id)

@@ -33,6 +33,28 @@ class DiscordNotify
         ]));
     }
 
+    public function new_group_request(array $r): void
+    {
+        $dates = $r['date_from'] ? thai_date($r['date_from']).($r['date_to'] ? ' – '.thai_date($r['date_to']) : '') : '';
+        $this->later(fn () => $this->send([
+            'title' => '👥 คำขอจัดกรุ๊ปเหมาใหม่ '.$r['reference'],
+            'color' => 0x9B51E0,
+            'url' => base_url().'admin/group-requests/'.(int) $r['id'],
+            'fields' => [
+                $this->field('จุดหมาย', $r['destination'], false),
+                $this->field('ประเภทกรุ๊ป', \App\Repositories\GroupTourRepository::group_types()[$r['group_type']] ?? $r['group_type']),
+                $this->field('ผู้เดินทาง', (int) $r['adults'].' ผู้ใหญ่'.((int) $r['children'] ? ' · '.(int) $r['children'].' เด็ก' : '')),
+                $this->field('วันเดินทาง', trim($dates.' '.$r['date_note'])),
+                $this->field('จำนวนวัน', $r['days'] ? (int) $r['days'].' วัน' : ''),
+                $this->field('งบต่อคน', \App\Repositories\GroupTourRepository::budgets()[$r['budget']] ?? ''),
+                $this->field('ผู้ติดต่อ', trim($r['contact_name'].' '.($r['organization'] ? '('.$r['organization'].')' : ''))),
+                $this->field('โทร', $r['phone']),
+                $this->field('LINE', $r['line_id']),
+                $this->field('รายละเอียด', $r['message'] ?? '', false),
+            ],
+        ]));
+    }
+
     public function slip(int $bookingId, int $paymentId): void
     {
         $this->later(function () use ($bookingId, $paymentId) {

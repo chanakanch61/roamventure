@@ -70,6 +70,20 @@ return [
             'path' => env('MAIL_SENDMAIL_PATH', '/usr/sbin/sendmail -bs -i'),
         ],
 
+        // Group tour (/grouptour) emails use their own mailbox, never the booking one.
+        // GROUPTOUR_MAIL_MAILER empty = these emails are switched off.
+        'grouptour' => [
+            'transport' => env('GROUPTOUR_MAIL_MAILER'),
+            'scheme' => env('GROUPTOUR_MAIL_SCHEME'),
+            'host' => env('GROUPTOUR_MAIL_HOST'),
+            'port' => env('GROUPTOUR_MAIL_PORT', 587),
+            'username' => env('GROUPTOUR_MAIL_USERNAME'),
+            'password' => env('GROUPTOUR_MAIL_PASSWORD'),
+            'timeout' => null,
+            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+            'channel' => env('MAIL_LOG_CHANNEL'),
+        ],
+
         'log' => [
             'transport' => 'log',
             'channel' => env('MAIL_LOG_CHANNEL'),
@@ -113,6 +127,12 @@ return [
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
+    ],
+
+    // Sender of the group tour emails (see the "grouptour" mailer above).
+    'grouptour_from' => [
+        'address' => env('GROUPTOUR_MAIL_FROM_ADDRESS'),
+        'name' => env('GROUPTOUR_MAIL_FROM_NAME', 'RoamVenture Group Tour'),
     ],
 
 ];

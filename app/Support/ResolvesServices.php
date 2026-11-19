@@ -8,6 +8,9 @@ use App\Repositories\BillingRepository;
 use App\Repositories\BlogRepository;
 use App\Repositories\DestinationRepository;
 use App\Repositories\GalleryRepository;
+use App\Repositories\GroupInvoiceRepository;
+use App\Repositories\GroupQuoteRepository;
+use App\Repositories\GroupTourRepository;
 use App\Repositories\HomeDestinationRepository;
 use App\Repositories\HotelLibraryRepository;
 use App\Repositories\PackageLevelRepository;
@@ -37,6 +40,9 @@ trait ResolvesServices
             'blog' => BlogRepository::class,
             'destination_html' => BlogRepository::class,
             'gallery' => GalleryRepository::class,
+            'group_tours' => GroupTourRepository::class,
+            'group_quotes' => GroupQuoteRepository::class,
+            'group_invoices' => GroupInvoiceRepository::class,
             'site_gate' => SiteGate::class,
             'upload' => Upload::class,
         ][$name] ?? throw new LogicException("Unknown service [{$name}]");
